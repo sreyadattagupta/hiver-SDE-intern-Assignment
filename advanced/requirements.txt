@@ -1,0 +1,14 @@
+# Optional heavy deps for the advanced track (neural retrieval + DistilBERT fine-tuning).
+# The BASE pipeline runs without these: retrieval falls back to the download-free hybrid
+# (TF-IDF + LSA), and classification uses the few-shot LLM / rules. Install these only to
+# enable sentence-transformer retrieval and to (re)train the fine-tuned classifier.
+#
+#   pip install -r advanced/requirements.txt
+#
+# Note: model weights download from the HuggingFace hub on first use. In a network-restricted
+# environment without the HF weight CDN, the pipeline automatically falls back (no crash).
+
+torch>=2.0
+transformers>=4.40
+sentence-transformers>=2.6
+scikit-learn>=1.3   # (also in base) used for LSA/SVD semantic retrieval

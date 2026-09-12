@@ -1,0 +1,22 @@
+{
+  "tfidf": {
+    "intent_match@3": 0.61,
+    "mean_top1_sim": 0.423,
+    "ms_per_query": 1.9183576107025146
+  },
+  "lsa": {
+    "intent_match@3": 0.605,
+    "mean_top1_sim": 0.617408,
+    "ms_per_query": 8.830595016479492
+  },
+  "hybrid": {
+    "intent_match@3": 0.615,
+    "mean_top1_sim": 0.940932,
+    "ms_per_query": 4.502469301223755
+  },
+  "st": {
+    "intent_match@3": 0.715,
+    "mean_top1_sim": 0.6248985,
+    "ms_per_query": 38.30886960029602
+  }
+}

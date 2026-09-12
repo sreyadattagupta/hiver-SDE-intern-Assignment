@@ -1,0 +1,16 @@
+venv/
+__pycache__/
+*.pyc
+.env
+data/twitter_support/twcs.csv
+data/_golden_sample.csv
+data/_judge_sample.csv
+.DS_Store
+
+# large trained artifact (268MB) — reproduce via `python -m advanced.train_classifier`
+advanced/models/
+
+# caches / tooling
+.pytest_cache/
+.playwright-mcp/
+*.log

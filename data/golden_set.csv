@@ -1,0 +1,201 @@
+pair_id,customer_msg,true_intent,ambiguous,notes
+uc_1097878,@Uber_Support I have reached out through email and the app,general_query,True,mixed/context-dependent
+uc_1794401,Craving dumplings. Help a sister out @115877 👋🏼,delivery_order,False,
+uc_2907302,"I am pissed with @115873 !! My driver was 3 minutes away! Mind you I need to be to work at 3, the driver CANCELS on me and now I’m late to work! Why take the ride if you already had someone you were dropping off? Then turn around and cancel",trip_issue,False,
+uc_393638,@Uber_Support what do I do when I get charged for a ride that never came?,billing_payment,False,
+uc_1449727,@115873 why are the airports trying to ruin y'all by making me travel so far out of the way?,trip_issue,False,
+uc_303059,@Uber_Support I used my friends Uber account. Is there a contact number I can use ?,general_query,False,
+uc_39702,@Uber_Support But I need to know now this is a scheduled ride for Friday.,general_query,True,mixed/context-dependent
+uc_1240679,Very dodgy @115873 driver in central Manchester fraudulently doing kerbside pick ups like black cabs. Anyone at Uber interested in a report? Sped off when challenged.,trip_issue,False,
+uc_2229809,@Uber_Support There’s no place to write a msg. One: driver didn’t alert me he was here and left. and charged me a cancellation fee,billing_payment,True,mixed/context-dependent
+uc_1560078,@Uber_Support I follow up at that link. Looking forward to reply. I hope you don’t penalize drivers for following the bad uber app directions.,general_query,True,mixed/context-dependent
+uc_2389881,@Uber_Support anyone on,general_query,False,
+uc_934544,"@Uber_Support I had a question about my billing for UberEats, added a gift card into my account but you guys charged my card instead!",billing_payment,True,mixed/context-dependent
+uc_2373620,So @115873 and @Uber_Support decide to cheat me off my money and then disgust me with these responses. #UberCheat #UberIndia https://t.co/Y5U585gECm,service_complaint,True,mixed/context-dependent
+uc_1166834,@Uber_Support 9654278004 Driver refuswd to take my rides but still cancellation has been charged to my account. Very unfair business,billing_payment,True,mixed/context-dependent
+uc_864623,@Uber_Support I just did...'awaiting further instructions and connections. thank you!,general_query,False,
+uc_2805266,@115873 @Uber_Support My drivwr asked cash on a non cash trip. I asked him to cancel and then he refused to cancel and kept going on. I had to cancel it and said u complain in Uber they would not anything . This is ur reputation. Another driver same issue https://t.co/X1Vkn0Xljy,trip_issue,False,
+uc_2697779,"@115873 @119983 while I booked cab , driver switched off cell and I'm waiting since 20 mints",trip_issue,False,
+uc_1379953,@Uber_Support That I know... But y should... Read my tweet again,general_query,False,
+uc_1891257,@Uber_Support I was rear ended by an Uber driver. How do I contact you &amp; report the accident? Your Help section doesn't have any useful info,safety_incident,False,
+uc_126494,@Uber_Support my Mail reciepent address is :__email__,general_query,False,
+uc_1411712,@115873 this driver is a menace! Nearly ran me over twice. Not paying attention to pedestrians at all. #Uber #Bad Driver. https://t.co/Ha2mb5eNOx,safety_incident,False,
+uc_2689597,"@115877 My friends free delivery code doesn’t work when I try to use it, and I don’t even seem to have one to give back!",billing_payment,False,
+uc_374247,My @115877 is currently an hour plus late,delivery_order,True,mixed/context-dependent
+uc_1539379,@Uber_Support __email__,general_query,False,
+uc_2489130,@Uber_Support I can't place an order on uber eats because it says 'error cannot verify payment profile'. pls help.,delivery_order,True,mixed/context-dependent
+uc_2217510,"@115873 is too arrogant , they blocked my account for promotions, and not removing it also, not giving justifiable reason!!! #UberisTooArrogant #KeepYourPromotionsWithYou #Arrogant #Uber #Cab #PrivateCab #PrivateCabUber",account_access,False,
+uc_2916495,@115873 WTF are your uber driver doing in gatwick? It's the 3time I order it and they cancel aftr 3mi waiting. Exactly the same than last week,trip_issue,False,
+uc_2408983,@Uber_Support I was one of the first to try at 2pm - I assume they are old sold out now as it’s still not showing 😕 https://t.co/yvsGbzmRTG,billing_payment,True,mixed/context-dependent
+uc_2170130,my @115873 driver sold my iphone that i️ left in his car...even when i️ reported it a missing item. only found out from the poor soul he sold it to #lyftforlife #ubercrooks,trip_issue,True,mixed/context-dependent
+uc_883648,@Uber_Support how do I toggle my payment method. I wanna use my uber credit balance for uber eats but it keeps trying to charge my card :(,billing_payment,False,
+uc_834479,@Uber_Support Check your Dm I have sent more screen shot on the debit initiated.,general_query,True,mixed/context-dependent
+uc_2347975,@Uber_Support no I don't receive it !,general_query,False,
+uc_2923014,@Uber_Support still haven’t heard back from anyone about the mess that happened last week. 🤔🤔🤔,service_complaint,False,
+uc_1085290,@Uber_Support Hi. I would like to find out where my background screening check is.at right now. Could you provide me with its link? Thanks,general_query,False,
+uc_2733010,@115873 blocking my driveway WA license BEW8530. MOVE CAR!,trip_issue,False,
+uc_514080,@115877 wth https://t.co/AeKdBiDMxH,general_query,False,
+uc_2776124,@Uber_Support hello can you help me unban my account? I had set up a credit card that I had locked to be used and forgot to unlock before requesting a ride and was banned,account_access,False,
+uc_232583,@Uber_Support Will wait only for 5 days if Uber won't respect my Language i am not going to use this app and tell my friends too.,service_complaint,False,
+uc_177911,@Uber_Support I just checked both emails and spam and nothing ? Should I just call cause this is ridiculous,service_complaint,False,
+uc_716102,Nothing like being in an @115873 accident to get your blood pumping and your clothing soaked in a downpour waiting for a cab.,safety_incident,False,
+uc_129958,@Uber_Support One of the worst experience with Uber Pool. My trip was ended in half way and I was asked to leave vehicle by Customer Care executive when driver contacted him. Horrible treatment? Shame on Uber! https://t.co/luVbyjLwzO,trip_issue,False,
+uc_1504420,UGH I WISH I COULD @115877 please come to Rochester! https://t.co/Y34CCXw3Cw,general_query,False,
+uc_2052588,@Uber_Support I was charged almost 80$ for no reason and was double charged for a trip I took this weekend and no one is responding....,billing_payment,False,
+uc_1568871,@Uber_Support I did already... and spent 2 weeks working with them without a solution,service_complaint,False,
+uc_1384256,Your driver went miles away and you are still charging me for it ? @Uber_Support @115873 https://t.co/u3Qyj1GnVe,billing_payment,True,mixed/context-dependent
+uc_146866,Dear @Uber_Support my driver lied in a report and said I spilled things in the back of the car and so Uber charged me a $150 cleaning fee. What is the meaning of this!?!,billing_payment,False,
+uc_948935,@345042 @115877 their delivery fees be more than the fuckin food bruh,billing_payment,True,mixed/context-dependent
+uc_1013844,@Uber_Support Go read your emails,general_query,False,
+uc_1507129,"@Uber_Support Cannot belive the level of incompetence and frankly, shitty #CustomerService",service_complaint,False,
+uc_2495215,Yo our Uber driver just offered us a shot of fireball like wtf 😂😂😂 lmao,safety_incident,False,
+uc_1141779,@Uber_Support Cant access your server.,account_access,False,
+uc_2691940,@Uber_Support our driver has cancelled our order and we can’t get hold of him... please help,delivery_order,False,
+uc_1311983,"@Uber_Support Trying to coordinate rides for others during Norcal fires, need support and questions answered ASAP!!!",general_query,False,
+uc_2427557,@Uber_Support Still waiting. Why is this taking so long to sort out,service_complaint,False,
+uc_2941466,@115873 not very happy with your drivers in Pune india,service_complaint,False,
+uc_1121379,Going to bed starving thanks to @115877 #neveragain,delivery_order,False,
+uc_2366474,@115877 just messed my order up so badly and now I'm stuck with food I'm allergic to and have to just straight up order new food because they won't make it right. People are straight dumb as shit,delivery_order,False,
+uc_2614405,I'm sorry to shame like this. But this is the 4th @115873 where the drivers personal hygiene smells way below par. I don't wanna star people lowly because of that but cmon #uberdrivers 😷😷😷🤢👃🏻,trip_issue,False,
+uc_2078989,Just had the worst @115877 experience 👎🏼👎🏼👎🏼 and there’s no number to call or even communicate with anyone 🙄,service_complaint,True,mixed/context-dependent
+uc_2539059,@Uber_Support CHECK DM,general_query,False,
+uc_2923045,"@Uber_Support Kindly, resolve the issue asap as it has already been 48 hours and the problem still exist",service_complaint,False,
+uc_2524602,"@115877 wow why is the surge 14$+ is toronto???? Is this a glitch? And how come certain restaurant I use to order from are ""too far now""",billing_payment,True,mixed/context-dependent
+uc_934552,@Uber_Support Not acceptable!!! We are starting a social media campaign to fix this!! Thousands of drivers are spending countless hours driving,service_complaint,False,
+uc_2145882,Why does it charge twice sometimes for one route? Just for the money to be put back in the account...is it a hold or error? @Uber_Support,billing_payment,False,
+uc_1257176,"My Uber driver was pulled over and he turned to me and said ""bro tell him we are friends, do not tell him you are an Uber passenger""",safety_incident,True,mixed/context-dependent
+uc_91611,@115877 just ordered @McDonalds burger &amp; fries were cold from waterloo branch. Had to wait 20 minutes. Starving no food. really disappointed. first time using uber eats too. Please rectify,delivery_order,False,
+uc_1727245,"@115873 Horrible experience with Venus in Cedar Hill , TX. Unprofessional, used profanity, poor representation of UBER, never got to work.",trip_issue,False,
+uc_2134214,@Uber_Support @115873 Is account registration not working for the iPhone X? I can’t get past adding my first and last name.,account_access,False,
+uc_574240,@Uber_Support why do I have to walk to a pick up point for my uber? Isn’t the point for them to come to me? Y’all are trash,trip_issue,False,
+uc_527787,@115873 @Uber_Support another of your idiot drivers just nearly hit me in a bikelane in SF - Folsom at Langton - then threatened me with his car. now calling cops. White Toyota 7SXF471 https://t.co/UGHszT1lRT,safety_incident,False,
+uc_2170155,"No music, no AC. Silence for over an hour. Very awkward @115873 ride.... 1 star.",trip_issue,False,
+uc_438166,@Uber_Support @115873 What is this complication in ur app.... not able to reset the password since last 48 hrs.. the otp doesn’t go through.. I think am done with Uber,account_access,False,
+uc_588799,Seriously @115873? I added the wrong promo code and now I can’t delete it. #frustratedcustomer,billing_payment,False,
+uc_2143543,@115873 I get charged for a ride in which the driver never picked me up,billing_payment,True,mixed/context-dependent
+uc_469502,@Uber_Support hi I upload my profile 2days ago still waiting on response. It's says I am wait list . Just wondering how long it's take,general_query,False,
+uc_1964743,"@115873 driver reached my location with trip already running. When I objected his act, driver cancelled the trip and told me he will not go.",trip_issue,False,
+uc_102119,@Uber_Support what is the average rating score for #uk drivers? Have you got any bands e.g 4.8 is good 4.9 is outstanding etc?,general_query,False,
+uc_2837720,@789789 @115877 @52126 I suggest a refund is due. Otherwise this story should be broadcast,billing_payment,False,
+uc_1718748,@Uber_Support You reinforced my mistrust in your company to the point I tell people not to use you. Get a grip because you're embarrassing at this point.,service_complaint,False,
+uc_2414662,"@Uber_Support @148768 sold me a dream and cancelled my order, won't be dealing with either again https://t.co/VH6knMtxu2",delivery_order,False,
+uc_306284,Hey @Uber_Support what happened to my visa local offers? Just updated my app and they appear to be gone,billing_payment,True,mixed/context-dependent
+uc_2373615,"@Uber_Support We were waiting outside front of venue for more than 40mins, I had phone in my hand watching cars accept ride then turn around other way.",trip_issue,False,
+uc_864570,@Uber_Support ... to send to each rider?,general_query,False,
+uc_2804461,@Uber_Support How do I request a ride w/o a functioning cell phone? I tried to do so online but I can't get the verification code b/c my phone is broken!,account_access,False,
+uc_2954630,@115873 @Uber_Support I tried to purchase at the very min of the email so it’s not a sold out thing! I “uber” upset!,billing_payment,False,
+uc_909641,@115873 this driver didn't show up then tried to charge ME for cancelling. Why is there no way to review or complain in these cases?!? https://t.co/Aur4g57MhG,billing_payment,True,mixed/context-dependent
+uc_2862651,@Uber_Support no!,general_query,True,mixed/context-dependent
+uc_2321270,"@115873 u guys are ridiculous ,I mailed several time, tweeted but my number is still blocked Poor customer service",account_access,True,mixed/context-dependent
+uc_2130229,"@115873 I'm an Uber driver. Since my car, Hyundai Elantra was vandalized and is in for repairs, my rental car, Hyundai Sonata, is included under my existing Elantra policy that you currently have on file. Can you help clear up this insurance snafu so I can drive ?",general_query,False,
+uc_2577122,"@115877 @2350 @139249 Are you just ignoring This, @115877 ? This is a legitimate complaint. One of your drivers, without a full license, driving irresponsibly and active in a threatening manner. Is there another way I should register my complaint?",safety_incident,False,
+uc_2818794,@Uber_Support The Forgot Password link isn't submitting for me. Just downloading a file to my computer when I put in my email or phone number.,account_access,False,
+uc_60354,"Hey @Uber_Support, overcharged for a ride, $8.13 ride charged me $913 resulting in a massive overdraft my account incurring many penalties",billing_payment,False,
+uc_1491930,"@Uber_Support when am i going to be an uber select driver, i have the car, the rides (50+) and 5 stars",general_query,False,
+uc_2402962,@148768 @115877 still can't get them at Baker Street,delivery_order,False,
+uc_381034,"@115877 Hey, Out order came it was very wrong. Can't find a way to resolve this through the app. Thanks :)",delivery_order,False,
+uc_1211831,"@115873 My husband left his phone in one of your drivers cars’ late last night, and has been trying to contact him with no luck.",trip_issue,False,
+uc_2398339,@Uber_Support I can’t log in to the site because of tfa.,account_access,False,
+uc_265094,@Uber_Support Hi. I’m trying to order food and every time I go to place order it ask me for my # but then says “error.” How do I fix this?,delivery_order,False,
+uc_1339104,"@115873 I have a charge on my card in the amount of $10.47 from this AM, but no trip w/a corresponding amount. Please clarify and refund.",billing_payment,False,
+uc_1811748,@115873 it is disgusting how your customer service is handling unauthorized charges on people’s accounts! #fraud,billing_payment,True,mixed/context-dependent
+uc_1889531,@151419 Wht can u do for ths unpleasant experience ? &amp; makng me stranded on road for almost 25 mins? @115873 @Uber_Support @119983 #troll them,trip_issue,False,
+uc_1252031,Beware of cheating by #Uber #ola is much better #thrusdaythoughts #BJP #gobackuber b4 trip amount ws 168 aftr trip 280. hapend thrice https://t.co/9l3mR17uTB,billing_payment,False,
+uc_765223,@116276 @Uber_Support Plz arrange a call back and lodge my complaint,service_complaint,False,
+uc_983839,@Uber_Support everytime i request a ride from my Uber account 9005845589 i get an error message “error processing request” https://t.co/khoJpNEiW3,trip_issue,False,
+uc_965841,#UberEats should compensate you when 30 min or less turns into 30 min or more 🙄 #StillWaiting @Uber_Support,delivery_order,False,
+uc_2266549,@Uber_Support When I booked the cab it was showing ₹74 but when we were on our way I got a message that fare will be higher than expected. Why did it happen? Why are you duping your customers? #Uber #India #Delhi,billing_payment,False,
+uc_2968422,@Uber_Support That’s a cancellation fee form-she finally showed up and blamed traffic which isn’t the case (and she never responded to messages). Not good customer service at all.,billing_payment,True,mixed/context-dependent
+uc_396153,@115873 @18871 wtf? https://t.co/oXrHkpFTaY,general_query,False,
+uc_789798,@115873 my driver told me one price on the curb but another price ($20+ more once I was in the car) I did not request it through the app,billing_payment,False,
+uc_2769118,"@Uber_Support our UberEats order was rejected last night but my card has still been charged, how do I get the money back?",billing_payment,True,mixed/context-dependent
+uc_2627841,"@115873 @Uber_Support this dude calls me thrice asking for destination and knowing ur drivers,I ignore twice n third time he says my car has.. https://t.co/hTDmhhM1EF",trip_issue,False,
+uc_2776153,@Uber_Support FIX THIS @115873 !,service_complaint,False,
+uc_1633287,@115873 I reported some riders yesterday about the racism and https://t.co/hFHrnBu3IX could i know the desicison uber made?,safety_incident,True,mixed/context-dependent
+uc_1409859,@115873 @Uber_Support I HAVE LITERALLY NEVER RECEIVED SUCH BAD CUSTOMER SERVICE WHAT THE FUCK IS WRONG YOUUUU https://t.co/SA8N79GIIw,service_complaint,False,
+uc_1941532,Instead of resolving the issue they just keep writing back same terms and bullshit. @Uber_Support Use to be a big fan of #Uber but u suck. https://t.co/eX8xctELSU,service_complaint,False,
+uc_782144,@Uber_Support hi there! Uber said I canceled a trip earlier today but I didnt. I didnt see the Uber driver show up. And now there will be a charge?? help!! thanks,billing_payment,True,mixed/context-dependent
+uc_2354013,@Uber_Support I can’t sign in to reply.,account_access,False,
+uc_703146,@Uber_Support i reset my phone recently and re installed uber app in my phone. Now i am unable to re login with the same mobile number. I didn't updated my account with the email address so i am now having trouble in loggin in again.,account_access,False,
+uc_1689547,"@Uber_Support hi, just signed up for uber hoping to get the $15 credit. Trying with code hittheroad, it says it is not working for my acc??",billing_payment,False,
+uc_2968448,"@115873 in Massachusetts its illegal to record someone without their expressed consent, so why is my uber driver recording me? I should know in advance before accepting a ride.",safety_incident,True,mixed/context-dependent
+uc_2217802,@Uber_Support help! Uber won’t accept my Apple Pay payment!,billing_payment,False,
+uc_1332521,@Uber_Support im not getting any promotion since i open my account..i need help,billing_payment,False,
+uc_1025697,@Uber_Support I send my email. I await a solution.,general_query,False,
+uc_2757570,@115873 I was wondering if it was possible to report unsafe driving of one of your employees. I was only able to get a tag number,safety_incident,False,
+uc_459080,@115873 I left my shit in yaw shit and dude ass not answering da phone dis how yaw rock and roll?,trip_issue,False,
+uc_2569030,. @115873 @Uber_Support a 42 minute conversation for a really poor experience all for your floor Supervisor to say “Send an email.” https://t.co/kQASh6h8Li,service_complaint,False,
+uc_835582,@Uber_Support I got a notification about 50% promo today through 10/15 but they are not be applied when I request an Uber,billing_payment,False,
+uc_1577582,@Uber_Support sorry I did not receive any email recently. __email__,general_query,False,
+uc_2550374,".@115873 driver tried to steal $20/$30 from me using a card swiper. Uber offers me $5 to sweep it under the rub. Sadly, I'm not surprised 👎🏾 https://t.co/xkEMfMAKon",trip_issue,True,mixed/context-dependent
+uc_274507,@115873 every time you make your booking a few minutes before a text says the price is higher. Today's was crazy DOUBLED. No more!!,billing_payment,False,
+uc_1663614,@Uber_Support Whats the use of sending promo code when they are invalid? #Fakeoffers #highlydisappointed,billing_payment,False,
+uc_1763370,@115873 unimpressed when driver cancels fare to get a better one when I can see him,trip_issue,False,
+uc_1038200,@Uber_Support Already did. Heard nothing back. I suppose I should have expected that.,service_complaint,False,
+uc_2059628,@115873 my friend left his phone in the car last night- help!,trip_issue,False,
+uc_2558777,"@726387 @Uber_Support @115873 Most annoying part is without understanding the trouble Sir, restart your app Sir, re-register Sir, reinstall the app Sir, Have u tried sign out and sign in...",service_complaint,False,
+uc_375869,@Uber_Support @205142 Where will i get the answer to my problem from tweeter or email. My email is __email__,general_query,False,
+uc_1049966,@115873 @Uber_Support the driver cancelled on me and I got charged 5 dollars that’s not fair,billing_payment,True,mixed/context-dependent
+uc_1808022,@115873 why isn't your app notifying me of drivers' arrivals? And also why are their maps giving longer routes than needed?,trip_issue,False,
+uc_662867,"@115877 your servers are down and i can’t order my food. Please fix. Sincerely, a hangry girl🙃",delivery_order,False,
+uc_2663838,@Uber_Support I was charged full price for a ride I had a credit that was applied to it.,billing_payment,False,
+uc_2807622,@Uber_Support I emailed support but no response. The debit card you alleged was fraudulent is in my possession and I am using my account so wtf,billing_payment,True,mixed/context-dependent
+uc_2798528,"@Uber_Support I reported this already, and was told the fee was applied correctly in order to compensate the driver for the time it took him to get to my apartment.",billing_payment,False,
+uc_1871100,@115873 ubereats. I ordered 2 sandwiches from Gandolfos Deli in Salt Lake City. I ordered 2 full lengths Turkey avocado sandwiches. The,delivery_order,False,
+uc_750056,@Uber_Support why was my account disabled when I haven't even taken my first trip yet lol,account_access,False,
+uc_293010,@Uber_Support Nothing has happened at all still waiting for the solution,service_complaint,False,
+uc_835581,@Uber_Support Unfortunately I didn't get one before I unlocked and it dissapeared. It had an emoji of an animal.,general_query,True,mixed/context-dependent
+uc_74884,Just calculated that @115873 and @115877 owe me £386.31 after charging “me” for all the times drivers cancelled and food that never arrived?,billing_payment,True,mixed/context-dependent
+uc_2738011,@Uber_Support NO GO. UBER in Brazil doesn't have Uber XL.,general_query,False,
+uc_855194,@Uber_Support Any Update on this ?,general_query,False,
+uc_2782087,I wish male @115873 drivers would stop hitting on me. So damn annoying,safety_incident,False,
+uc_2379922,"@115873 i been using the app for so long and so much and never, even in the first ride get a free one. Can you guys do something for me?",billing_payment,True,mixed/context-dependent
+uc_635845,@Uber_Support r u not listening to my query,general_query,False,
+uc_854789,"@Uber_Support I wasn't charged the fee, I'm here to rat this guy out. Tell him to stop and follow your rules. #uber",trip_issue,False,
+uc_2710992,@Uber_Support : Can u please check why my account is disabled for promotion. Please enable it for number: 7507237849,account_access,False,
+uc_1462125,@Uber_Support Thanks for your prompt response. I would love to be able to DM you guys to explain the scenario more,general_query,False,
+uc_2711946,"@115873 Fuck you and your shitty support reps, just because someone goes to a city and then weeks,months, years later they have a fraudulent charge for a ride in that same city it's legitimate? #Uberstories #uber #fraud @Uber_Support goodluck on the shit storm of PR I'm bringing to you",service_complaint,True,mixed/context-dependent
+uc_1660458,"Uber drivers can’t find simple locations so when they tell you to cancel the trip, you still get charged smh. It’s stupid. @Uber_Support",billing_payment,True,mixed/context-dependent
+uc_2930407,"@Uber_Support booked a cab in Bombay, first cabbie cancelled. Second cabbie refused my destination and he dint cancel. He started the ride and ended it. I got charged for it. Now there's no way for me to complain cause your application isn't allowing me to!!",billing_payment,True,mixed/context-dependent
+uc_288978,Be aware @115877 will not help nor refund you on orders if you receive bad food due to their lack of riders! @115873 shouldn't accept jobs https://t.co/uIKiK59d0s,delivery_order,False,
+uc_2121220,"Whoa @115873 @Uber_Support @2780 - why did I get a ""corrected fair"" charging me DOUBLE what I was quoted...nearly an hour after the ride???",billing_payment,False,
+uc_781311,@115873 drivers in Punjab are really unprofessionals. This guy here is taking with his girl friend while I’m in car. Not sure how they work,trip_issue,False,
+uc_1911662,@Uber_Support @115873 Your services are going down the drain. Pathetic to say the least.,service_complaint,False,
+uc_2981978,Had the worst customer service on the planet today courtesy of my @115873 driver...Is there a number I can call about this guy? I want my money back and I took his plate number,trip_issue,True,mixed/context-dependent
+uc_2031364,@115873 your help desk is terrible. Still can’t get help with my payment issue. All I want to do is use you but you make it so hard,service_complaint,False,
+uc_1350675,"Hey @115873 @Uber_Support , if driver waits 5min, I get charged $5. But if I cancel after waiting longer... I get charged $5?? 🤔. Explain...",billing_payment,False,
+uc_1130056,@Uber_Support really? https://t.co/bBHWi92847,general_query,False,
+uc_1622505,Dear @115873: Miami drivers should have Sunpass and take Express Lines always. It is not expensive. Tks,general_query,False,
+uc_2446487,@Uber_Support My issue isn't covered there at all. It's literally an error message saying that my request could not be processed. This is no help at all.,service_complaint,True,mixed/context-dependent
+uc_1967395,@115873 I m referring this cheating case by uber to Govt authorities to suspend their license. Uber has no helpline no to contact.,service_complaint,False,
+uc_2915136,"@Uber_Support @806934 That's the whole issue, UberEATS need to offer phone support, like myself being left with missing food + drink with no reply for over 24 hours is NOT acceptable!",delivery_order,False,
+uc_704631,@115873 I’ve been charged £127 for a 10 minute trip?! Please explain and refund me. https://t.co/zjv1hroYup,billing_payment,False,
+uc_703129,"Sigh....@115873 app officially cancelled, you guys suck! Now pay me back my money PRONTO! What a joke 😒",billing_payment,False,
+uc_1208811,"@Uber_Support No help at all, page seems like info blog but no options to solve my problem, does someone in your BIG company can help? Someone Real? Thank",service_complaint,False,
+uc_1024536,"@Uber_Support - My BF keeps getting these promotions, but I never get these in my inbox. I've checked the spam folder. How do I sign up? https://t.co/Mu9Khv5OcM",billing_payment,False,
+uc_478095,@Uber_Support You should have left the terms as they previously were with UNLIMITED UberPOOL and UberX throughout the City of Chicago and not to a specific destination 😡😡😡🤬🤬🤬,service_complaint,False,
+uc_1712595,@Uber_Support do you know why the multiple destination option is not available to me? The + doesnt show up besides the where to? box.,general_query,False,
+uc_2652833,"I am not able to login with application, it is showing that my password is incorrect. There is no problem when I log in with web. @Uber_Support",account_access,False,
+uc_877346,@Uber_Support This isn't sufficient I need to send an email please provide an email address,general_query,False,
+uc_1343726,@Uber_Support https://t.co/ezlX5mZep7,general_query,False,
+uc_981274,"Absolutely fuming at @115873, driver cancelled on me and charged me!!",billing_payment,False,
+uc_2420421,@Uber_Support This has put me into my overdraft! Please can someone sort this out,billing_payment,False,
+uc_2083461,@150 @Uber_Support Can some1 in SF please take a 2nd look at my case? Driver didn't have FastTrak (big no-no for BayArea driver) didnt tell me til already @ Bay Bridge toll. Arrived 1hr late to destination than Uber estimated arrive time. Missed flight. Just asking for refund,billing_payment,True,mixed/context-dependent
+uc_992083,"Hi @Uber_Support, can you please enable us to change phone numbers without having to beg for it every single time? https://t.co/BFz1dKf5ij",account_access,False,
+uc_333302,@Uber_Support having another issue booking an Uber HELP! Lol,trip_issue,False,
+uc_2221260,Mad as hell with @115873 @87620 @Uber_Support for not having more ways to get back or communicate for forgotten items with no phone services available and on top charging a 15 dollar fee... ridiculous. Mad at myself for even having to go through this,trip_issue,True,mixed/context-dependent
+uc_2754854,"@Uber_Support TY for response. That does not appear to be accurate, though. Clicking in email receipt says I've already rated and no option to change rating in-app. Also read something saying changing star rating not allowed.",trip_issue,False,
+uc_521793,@Uber_Support Waiting for support 🙏,general_query,False,
+uc_2264013,First time using @115877 and my coupon codes doesn't work. 🤷🏾‍♂️ #WhyTho #TheStruggle,billing_payment,False,
+uc_457953,@Uber_Support I have completed 3 trips and have not been paid for any of them,billing_payment,False,
+uc_464459,Ok @Uber_Support @115873 we should be able to rate the people we take an uber pool with. Because the girl I just pooled with was rude AF and it took everything in me to be a good passenger. 😒,general_query,False,
+uc_1250718,can you uber eats candy corn :( ?,general_query,False,
+uc_249465,@115873 @Uber_Support just got scammed with an $80 cleaning fee. The pictures provided by the driver were absolutely not from us. Never left a mess or damaged the car in anyway. Beware customers of this scam! Deleting uber app now.,billing_payment,False,
+uc_2697353,@115873 is there a number I can call to report a fraudulent charge?,billing_payment,False,
+uc_207234,"@115877 your service is so bad lmao this is the second time I've had a uber driver avoid coming straight to me, he just drives in circles.",trip_issue,False,
+uc_100069,"@Uber_Support Ok, I did that and am getting no response.",service_complaint,False,
+uc_1349374,@Uber_Support Thanks I’ve applied but I’d like to speak to someone to complain about his behaviour,service_complaint,True,mixed/context-dependent
+uc_769310,"@115873 Your customer service process via emails needs some rethinking. People don't understand plain english, and keep double charging for same trip instead.",service_complaint,True,mixed/context-dependent
+uc_1564140,"@Uber_Support Usual response, that shows irresponsible organisation culture who are here only to cheat us. #shamelessuber",service_complaint,False,
+uc_1427199,@Uber_Support This link was not helpful at all. How do I receive my credit for my driver canceling when she had no reason to,billing_payment,True,mixed/context-dependent
+uc_1816975,@115877 what do we do? Help!,general_query,False,
