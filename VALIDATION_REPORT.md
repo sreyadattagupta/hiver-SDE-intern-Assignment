@@ -163,3 +163,64 @@ fallback so the base pipeline never hard-depends on a download.
 matches ("charged for a ride I did not take" for "charged twice"), Stage-3 shows the groundedness
 verifier verdict, and Stage-1/4 honestly report the `rules` fallback while the free LLM quota is
 exhausted.
+
+---
+
+## Feedback loop / human-verified resolution memory (added 2026-09-15)
+
+Extension: customer-satisfaction → human escalation → verified resolution memory → RAG improvement.
+Every result below was executed, not assumed.
+
+### Automated tests
+- `python -m pytest tests/ -q` → **48 passed** (21 pre-existing + 27 new in `tests/test_feedback_loop.py`).
+- Coverage: explicit feedback (👍/👎/human), implicit dissatisfaction (rejection phrases, repeat,
+  plain-technical-complaint = NOT dissatisfied), escalation signals (safety, low confidence,
+  groundedness fail, LLM fail, 1st-👎-no / 2nd-👎-yes), memory (add / dedup / reject-unverified /
+  conflict-flag), resolution retrieval (relevant / irrelevant / intent-mismatch / empty), pipeline
+  back-compat (historical-only unchanged when memory empty; verified ranked first when relevant),
+  UI state (feedback mutates state, escalation record has full context), evaluation (Recall@K).
+
+### Evaluation (`python -m src.memory_eval` → `reports/memory_eval.md`)
+- Recall@3 (realistic re-contact retrieves seeded verified resolution): **1.00**
+- Verified resolution ranked first over historical evidence: **True**
+- Below-threshold query excluded: **True** · Intent-mismatch excluded: **True**
+- NOT claimed (insufficient data): escalation precision/recall, false-escalation rate,
+  unresolved-repeat rate, hallucination-rate A/B — these need a labeled escalation set + real traffic.
+
+### App boot
+- `streamlit run app.py --server.headless true` → HTTP **200**, initial render, **no exceptions in log**.
+
+### Manual UI acceptance
+The interactive click-through (press 👍/👎/💬, submit a human resolution, observe the loop-viz, and
+scroll each panel) was NOT executed in this headless session. The underlying state transitions are
+covered by the `ui_state` unit tests; the layout invariants below are structural facts of the code:
+- Independent scrollbars: LEFT Agent Run and RIGHT chat each render inside their own
+  `st.container(height=...)` (`app.py`) → independent scroll. **Verify manually in a browser.**
+- Header un-clipped: Streamlit's default header is hidden (`header[data-testid="stHeader"]{display:none}`)
+  and a custom sticky `.topbar` is used. **Verify manually in a browser.**
+
+### Live browser test (Playwright-driven real Chromium)
+
+Drove the running app end-to-end in a real browser (`streamlit run app.py` on :8535) and captured
+screenshots. Every result below is from actual clicks, not simulation.
+
+- **Initial render**: title "Uber Support AI — Console", header visible/un-clipped, 4 pending stage cards.
+- **Safety scenario** → 4 stages run → intent `safety_incident` 0.99 → routed **HUMAN** → red
+  🔴 HUMAN ESCALATION banner + 👤 Human Agent Console rendered.
+- **Human resolution** → typed resolution → ✅ Resolve & Verify → full loop-viz strip
+  (AI RESPONSE → 👎 FEEDBACK → 🔴 ESCALATION → 👤 RESOLUTION → ✓ VERIFIED → 🧠 MEMORY → 🔎 FUTURE
+  RETRIEVAL) + persistent green "Verified resolution stored" note.
+- **Cross-run learning observed**: after a resolution was stored, a later run's Semantic Retrieval
+  panel read `resolution_memory · top sim 0.864 · 1 verified` and grounded the reply on the
+  HUMAN-VERIFIED resolution — the loop demonstrably improves retrieval.
+- **Multi-turn**: 2 customer + 2 AI bubbles render, feedback buttons per turn, **0 duplicate-key errors**.
+
+**Two UI bugs found live and fixed** (see git history):
+1. `StreamlitDuplicateElementKey` on the 2nd conversation turn — `render_chat()` was called twice per
+   run, duplicating feedback-button widget keys. Fixed (render once).
+2. "Verified resolution stored" confirmation invisible — `st.success()` + immediate `st.rerun()`
+   discarded it. Fixed (durable per-turn note under the loop-viz).
+Plus a logic bug fixed earlier: first-contact complaints were false-escalated as dissatisfaction.
+
+**Still requiring a human eye:** fine-grained scroll independence under heavy content and exact
+header spacing across themes — screenshots look correct; not asserted as pixel-perfect.

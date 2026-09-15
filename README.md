@@ -1,257 +1,294 @@
 <div align="center">
 
-# 🚕 Uber_Support AI Customer-Support Agent
+# 🚕 Uber_Support AI — Customer-Support Agent
 
-**A production-minded AI support pipeline that classifies a customer message, retrieves historically similar `Uber_Support` conversations, drafts a grounded reply, verifies it, and decides AI-vs-human routing — with evidence for every decision.**
+**A production-minded AI support system for the `Uber_Support` brand: it classifies a customer
+message, retrieves how *real* similar cases were resolved, drafts a grounded reply, verifies it,
+and decides AI-vs-human routing — then, when the customer is unhappy, escalates to a **human**,
+and turns the human's verified fix into retrieval knowledge for the next customer.**
 
-*Hiver SDE Intern — Take-Home Assignment · Brand: `Uber_Support` · Dataset: Customer Support on Twitter*
+*Hiver SDE Intern — Take-Home · Brand: `Uber_Support` · Dataset: Customer Support on Twitter*
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-20%2F20%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-66%20passing-brightgreen)
 ![Red--team](https://img.shields.io/badge/red--team-12%2F12-brightgreen)
-![Lint](https://img.shields.io/badge/pyflakes-clean-brightgreen)
 ![LLM](https://img.shields.io/badge/LLM-Groq%20%E2%86%92%20Gemini%20fallback-8A2BE2)
 ![UI](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)
-![Status](https://img.shields.io/badge/status-working%20%C2%B7%20reproducible-success)
-![License](https://img.shields.io/badge/license-MIT-blue)
 
-**Best classifier macro-F1 `0.690` · Safety recall `1.00` (LLM) · Neural retrieval intent-match@3 `0.715`**
-*(every number below is measured on a held-out set and reproducible — see [Results](#-19-results))*
+**Best classifier macro-F1 `0.690` (few-shot LLM) · Safety recall `1.00` (LLM) · Neural retrieval intent-match@3 `0.715`**
+*Every number below is measured on a held-out, leakage-safe golden set and is reproducible.*
 
 </div>
 
 > [!IMPORTANT]
-> **Core principle of this submission: PROOF > CLAIMS.** The assignment rewards *proving* a system
-> works, not model size. Everything here is measured on a leakage-safe golden set, compared against
-> baselines, and its weaknesses are documented honestly (see [Misleading Headline Number](#-21-whats-misleading-about-my-headline-number)).
+> **Core principle: PROOF > CLAIMS.** The assignment rewards *proving* a system works, not model
+> size. Everything here is measured against baselines on a hand-labelled golden set, its weaknesses
+> are documented honestly (see **[§9 Misleading headline](#9-whats-misleading-about-my-headline-number-mandatory)**),
+> and every fallback is reported, never hidden.
 
 ---
 
-## 📑 Table of Contents
+## Table of contents
 
-| | | |
+1. [Problem framing — what "good" means, and what I did *not* build](#1-problem-framing)
+2. [System architecture](#2-system-architecture)
+3. [How it works — the 4 AI stages](#3-how-it-works--the-4-ai-stages)
+4. [Human-in-the-loop platform (customer + admin)](#4-human-in-the-loop-platform-customer--admin)
+5. [Data pipeline & no-leakage guarantee](#5-data-pipeline--no-leakage)
+6. [Golden evaluation set](#6-golden-evaluation-set) — *deliverable 2*
+7. [Evaluation harness + LLM-as-judge](#7-evaluation-harness--llm-as-judge) — *deliverable 3*
+8. [Results vs baselines](#8-results-vs-baselines)
+9. [What's misleading about my headline number](#9-whats-misleading-about-my-headline-number-mandatory) — *mandatory*
+10. [Failure analysis — top 5](#10-failure-analysis--top-5-modes)
+11. [What I'd do with one more week](#11-what-id-do-with-one-more-week)
+12. [Decision log](#12-decision-log) — *deliverable 5*
+13. [Run it locally](#13-run-it-locally)
+14. [Project structure](#14-project-structure)
+
+---
+
+## 1. Problem framing
+
+`Uber_Support` on Twitter handled **39,443** inbound and **56,270** outbound messages. They range
+from trivial (*"how do I add a stop?"*) to financial (*"charged twice, refund me"*) to **physically
+dangerous** (*"my driver was drunk and crashed"*). A support system must, in seconds: understand the
+message, draft a helpful reply grounded in what actually resolved similar cases, and decide whether
+AI can handle it or a **human must**.
+
+### What "good" means for this brand
+| Dimension | Why it matters for `Uber_Support` | How I measure it |
 |---|---|---|
-| [1. Problem](#-1-problem) | [15. Data Pipeline](#-15-data-pipeline) | [29. Local Setup](#-29-local-setup) |
-| [2. Solution](#-2-solution) | [16. Dataset](#-16-dataset) | [30. Environment Variables](#-30-environment-variables) |
-| [3. Design Principles](#-3-design-principles) | [17. Golden Evaluation Set](#-17-golden-evaluation-set) | [31. Testing](#-31-testing) |
-| [4. Key Features](#-4-key-features) | [18. Baselines](#-18-baselines) | [32. Validation](#-32-validation) |
-| [5. End-to-End Pipeline](#-5-end-to-end-pipeline) | [19. Results](#-19-results) | [33. Error Handling](#-33-error-handling) |
-| [6. Agent Architecture](#-6-ai-agent-architecture) | [20. Failure Analysis](#-20-failure-analysis) | [34. Security](#-34-security) |
-| [7–13. The 4 stages](#-7-stage-1--intent-classification) | [21. Misleading Headline](#-21-whats-misleading-about-my-headline-number) | [35. Performance](#-35-performance) |
-| [14. System Architecture](#-14-system-architecture) | [22–23. LLM Judge & Agreement](#-22-llm-as-judge--human-agreement) | [36–42. Prod / Limits / License](#-36-production-considerations) |
+| **Never miss a safety incident** | a drunk-driver / assault report handled by a bot is a catastrophe | `safety_incident` recall (LLM path **1.00**) |
+| **Correct intent on money & access** | billing dominates real traffic (55/200) | per-class precision/recall, macro-F1 |
+| **Grounded, not templated** | ~61% of real Uber replies are "please DM us" — easy to game | DM-deflection rate + `helpful` judge score |
+| **Escalate when unsure or unhappy** | a confidently-wrong answer with no human path loses the customer | routing audit + human-in-the-loop escalation |
+| **Learn from human fixes** | the same problem recurs; a resolved ticket is free knowledge | verified-resolution retrieval |
+
+### What I deliberately did **not** build (scope honesty)
+- **No hosted API / microservices / vector DB.** Single-process Python + Streamlit — reproducible in
+  <15 min on any machine with no infra. The "backend" is an atomic file store (§4).
+- **No model fine-tuning in the production path.** I *did* fine-tune a real DistilBERT (`advanced/`)
+  to prove I can — it beats the rules but **loses to the few-shot LLM (0.549 vs 0.690)**, so it stays
+  an offline fallback, reported honestly.
+- **No RLHF / auto-retraining.** Human feedback becomes **retrieval knowledge**, not weight updates.
+- **No auth / multi-tenant / horizontal scale** — out of scope for a take-home, called out in §4.
+- **No claim of human-level reply quality** — the LLM-judge agreement is only *fair* (§7), so I lead
+  with classification F1 (checked against hand labels), not a reply "quality score".
 
 ---
 
-## 🎯 1. Problem
-
-Real customer-support inboxes are **messy, high-volume, and mixed-risk**. On Twitter, `Uber_Support`
-received **39,443** inbound customer messages and sent **56,270** replies. Those messages range from
-trivial (`"how do I add a stop?"`) to financial (`"charged twice, refund me"`) to **physically
-dangerous** (`"my driver was drunk and crashed"`). A support org needs to, in seconds:
-
-1. **Understand** what each message is about.
-2. **Draft** a helpful, on-brand reply grounded in what actually resolved similar cases.
-3. **Decide** whether AI can handle it or a **human must** (safety, low confidence, repeat contact).
-4. **Prove** the above works — not just claim it.
-
-## 💡 2. Solution
-
-A transparent **4-stage AI agent** over the *Customer Support on Twitter* dataset:
-
-```
-Customer message → 1) Classify intent → 2) Retrieve similar real cases
-                 → 3) Draft grounded reply (+verify) → 4) Safety + route (AI/HUMAN)
-```
-
-Every stage returns a real value **and a plain-English "why"**, runs a real model (LLM with an
-offline fallback), and is measured against baselines on a held-out golden set.
-
-## 🧭 3. Design Principles
-
-| Principle | How it shows up here |
-|---|---|
-| 🔬 **Proof > system** | 200-example golden set, 2 baselines, LLM-judge vs human agreement, failure analysis |
-| 🪞 **Honesty > marketing** | fine-tuning reported as *not* beating the LLM; judge's weak agreement disclosed |
-| ♻️ **Reproducible > complex** | fixed seeds, `requirements.txt`, deterministic data build, CPU-only base |
-| 🔁 **Graceful degradation** | LLM fails → offline rules/synth path, **method always reported** (never faked) |
-| 🚫 **No leakage** | retrieval corpus and golden set are disjoint by construction |
-
-## ✨ 4. Key Features
-
-- 🏷️ **7-intent classifier** — few-shot LLM (best) with a transparent rule fallback + `needs_context` flag.
-- 🔎 **Hybrid semantic retrieval** — neural sentence-transformers → LSA/TF-IDF hybrid → TF-IDF (auto, graceful).
-- ✍️ **Grounded drafting** — synthesizes a *fresh* reply from the top-3 real cases (never copies verbatim).
-- ✅ **Groundedness verifier** — blocks hallucinated URLs & unsupported "we refunded you" promises → regenerate → safe fallback.
-- 🛡️ **Context-aware safety** — distinguishes `"app crashed"` (AI) from `"driver crashed"` (HUMAN); handles negation.
-- 🚦 **Auditable routing** — combines intent + confidence + safety + frustration + repeat-contact, with a reason string.
-- 🔗 **Dual-LLM fallback chain** — **Groq → Gemini → rules**, each stage reports which provider actually answered.
-- 🧪 **Full evaluation suite** — baselines, confusion matrices, LLM-judge + Cohen's kappa, red-team, before/after report.
-- 🖥️ **Live Streamlit console** — watch the real pipeline execute stage-by-stage next to a customer chat.
-
----
-
-## 🔄 5. End-to-End Pipeline
-
-```mermaid
-flowchart LR
-    U["📩 Customer message"] --> P["🧹 Preprocess<br/>(context-preserving)"]
-    P --> C["1️⃣ Classify intent<br/>LLM / rules"]
-    C --> R["2️⃣ Retrieve top-3<br/>neural / hybrid"]
-    R --> D["3️⃣ Draft reply<br/>grounded + verified"]
-    C --> RT["4️⃣ Safety + Route"]
-    U --> RT
-    D --> RT
-    RT --> OUT{"AI or HUMAN?"}
-    OUT -->|AI| A["🤖 Reply shown in chat"]
-    OUT -->|HUMAN| H["🧑 Escalate to human"]
-```
-
-Each hand-off is real: the classification dict feeds stages 3 & 4; the retrieved cases feed stage 3;
-the message + classification feed stage 4.
-
-## 🧩 6. AI Agent Architecture
+## 2. System architecture
 
 ```mermaid
 flowchart TD
-    subgraph S1["1️⃣ Intent + Context Analyst — classify_intent()"]
-      A1["few-shot LLM (Groq→Gemini)"] -. fail/no key .-> A2["rule classifier<br/>(context-safety aware)"]
-      A1 --> O1["{intent, confidence, runner_up,<br/>needs_context, method, reason}"]
+    U["📩 Customer message"] --> PRE["🧹 Preprocess<br/>(context-preserving)"]
+    PRE --> C["1️⃣ Classify intent<br/>few-shot LLM / rule fallback"]
+    C --> R["2️⃣ Retrieve top-3 grounding cases"]
+
+    subgraph RET["Retrieval — two layers, one TF-IDF space"]
+      MEM[("🧠 Verified-resolution memory<br/>data/resolution_memory.jsonl")]
+      HIST[("📚 1,500 historical (msg→reply) pairs<br/>data/uber_pairs.csv")]
     end
-    subgraph S2["2️⃣ Semantic Retrieval — retrieve_similar()"]
-      B1["sentence-transformers<br/>all-MiniLM-L6-v2 · best"] -. unavailable .-> B2["hybrid TF-IDF+LSA<br/>+ lexical rerank"] -. .-> B3["TF-IDF"]
-    end
-    subgraph S3["3️⃣ Grounded Response — draft_reply()"]
-      D1["LLM draft (anti-DM, evidence-grounded)"] --> V["verify_draft()<br/>no invented URL / no fake promise"]
-      V -- hard fail --> D2["regenerate strict"] --> V
-      V -- still fail --> D3["synthesized safe reply<br/>(from top-3, no verbatim copy)"]
-    end
-    subgraph S4["4️⃣ Safety + Routing — detect_safety() + route_decision()"]
-      E1["safety: LLM verifier ‖ NLP rules<br/>(whole-word + window + negation)"]
-      E2["route: safety + confidence +<br/>frustration + repeat-contact"]
-    end
-    S1 --> S2 --> S3 --> S4 --> OUT["AI / HUMAN + reason"]
-    FT["🧪 advanced/: fine-tuned DistilBERT<br/>(real SFT, offline alt — evaluated, trails LLM)"] -. optional .-> S1
+    R --- MEM
+    R --- HIST
+
+    R --> D["3️⃣ Draft reply<br/>grounded in top-3"]
+    D --> V["✅ verify_draft()<br/>no invented URL / no fake promise"]
+    V --> S["4️⃣ Safety + Route<br/>context-aware detect_safety()"]
+    S --> DEC{"AI or HUMAN?"}
+    DEC -->|AI| AIOUT["🤖 Reply shown to customer"]
+    DEC -->|HUMAN| ESC["🧑 Escalate"]
+
+    AIOUT --> FB{"👍 / 👎 / 💬 feedback"}
+    FB -->|👍 Helpful| LOG[("raw feedback log<br/>data/feedback_log.jsonl")]
+    FB -->|👎 / 💬| ESC
+    ESC --> STORE[("🗂️ Shared conversation store<br/>state machine: AI→WAITING→HUMAN→RESOLVED")]
+    STORE --> ADMIN["👤 Human Support dashboard"]
+    ADMIN -->|Resolve & Verify| GATE{"human_verified<br/>+ closed?"}
+    GATE -->|yes| MEM
+    GATE -->|no| DROP["discarded — never trusted"]
+    MEM -. grounds future answers .-> R
+
+    C -. no key / error .-> LLMF["🔗 Groq → Gemini → rules<br/>(method field reports the real path)"]
 ```
 
-Contracts (stable — UI, eval, tests depend on them):
+**Reading the diagram:** the four AI stages run left-to-right; retrieval merges *historical* cases
+with *human-verified* resolutions in the **same fitted TF-IDF space** so their scores are comparable.
+If the customer is unhappy (👎 / 💬) or the router flags safety/low-confidence, the conversation
+enters a **shared file-backed store** with an explicit state machine; a human resolves it, and only a
+**verified, closed** resolution flows back into retrieval memory. Every LLM stage falls back Groq →
+Gemini → rules and **states which path produced the result** (`method` field).
+
+> **Single process, no HTTP API — by design.** `app.py` imports `src/pipeline.py` and calls it
+> in-process. If `app.py` were deleted the agent still runs headless via `python -m src.eval`.
+
+---
+
+## 3. How it works — the 4 AI stages
+
+Stable public contracts (UI, eval, and tests all depend on these):
 
 ```python
-classify_intent(msg)              -> {"intent","confidence","runner_up","method","needs_context","reason"}
-retrieve_similar(msg, k=3)        -> [{"pair_id","customer_msg","brand_reply","score","method"}, ...]
+classify_intent(msg)                -> {"intent","confidence","runner_up","method","needs_context","reason"}
+retrieve_similar(msg, k=3, intent)  -> [{"pair_id","customer_msg","brand_reply","score","method","verified"}, ...]
 draft_reply(msg, retrieved, intent) -> {"draft","cited_example_id","justification","method","verification"}
-detect_safety(msg)                -> {"is_safety","triggers","reason","method"}
-route_decision(cls, msg, history) -> {"decision": "AI"|"HUMAN", "reason"}
+detect_safety(msg)                  -> {"is_safety","triggers","reason","method"}
+route_decision(cls, msg, history)   -> {"decision":"AI"|"HUMAN","reason"}
 ```
 
-### 🏷️ 7. Stage 1 — Intent Classification
-- **7 intents:** `billing_payment` · `account_access` · `trip_issue` · `safety_incident` · `delivery_order` · `service_complaint` · `general_query`.
-- **Few-shot LLM** (2–3 real examples/intent) is the production classifier; **rule keyword-scorer** is the transparent, zero-key fallback. Both emit a `reason` (LLM cites the driving words; rules list matched keywords).
-- Low confidence (`<0.55`) sets `needs_context`, which feeds routing.
-
-### 🔎 8. Stage 2 — Semantic Retrieval
-- `method="auto"`: **neural** sentence-transformer embeddings when available → **hybrid** (TF-IDF+LSA+lexical rerank) → **TF-IDF**. All offline-capable; neural needs a one-time model download.
-- Retrieves top-3 `(customer_msg → brand_reply)` pairs from **1,500** real resolved cases.
-
-### ✍️ 9. Stage 3 — Response Generation
-- LLM drafts a reply **grounded in the top-3** references with an **anti-"please DM us"** instruction (acknowledge the specific issue first).
-- Offline fallback **synthesizes** a fresh reply from all 3 references (intent-aware acknowledgement + mirrored resolution pattern) — **never copies a dataset reply verbatim, never leaks a real name/URL**.
-
-### ✅ 10. Stage 3b — Groundedness Verification
-- `verify_draft()` **hard-fails** on: invented URL (not in retrieved evidence), unsupported completed-action promise (`"we've refunded you"`), empty/too-short.
-- On hard fail → regenerate strictly → if still bad → safe synthesized fallback. Soft flags (e.g. DM-deflection) are reported, not blocked.
-
-### 🛡️ 11. Stage 4a — Safety Detection
-- `detect_safety()` = **LLM verifier ‖ NLP rules** (whole-word matching + ±4-token context window + negation + tech-vs-vehicle disambiguation).
-- Fixes the classic keyword collision: `"app keeps crashing"` → **not safety**; `"driver crashed the car"` → **safety**; `"no accident"` → **not safety**.
-
-### 🚦 12. Stage 4b — AI vs Human Routing
-- Escalates to **HUMAN** on: physical-safety signal, low confidence (`<0.55`), ≥2 frustration markers, or ≥3 prior messages in the thread. Otherwise **AI**.
-- Emits a reason, e.g. `Routed to HUMAN because: safety incident — reports a vehicle collision [llm:gemini].`
-
-### 🔗 13. Dual-LLM Fallback Chain
-```mermaid
-flowchart LR
-    Q["chat(json)"] --> G["Groq · gpt-oss-120b"]
-    G -- 429 / error / empty --> M["Gemini · gemini-3.6-flash"]
-    M -- error --> RU["rules / synthesized reply"]
-    G -- ok --> OK1["method = llm:groq"]
-    M -- ok --> OK2["method = llm:gemini"]
-    RU --> OK3["method = rules (llm_error: …)"]
-```
-> The `method` field on every stage tells the truth about which path produced the result.
+1. **Intent classification** — 7 intents (`billing_payment · account_access · trip_issue ·
+   safety_incident · delivery_order · service_complaint · general_query`). Production path = few-shot
+   LLM (2–3 real examples/intent); zero-key fallback = transparent keyword scorer. Both emit a
+   `reason`; confidence `<0.55` sets `needs_context`, which feeds routing.
+2. **Semantic retrieval** — `auto`: **neural** sentence-transformers → **hybrid** (TF-IDF+LSA+lexical
+   rerank) → **TF-IDF**. Retrieves top-3 `(customer_msg → brand_reply)` from 1,500 real cases, merged
+   with any eligible **verified** resolution (gated by similarity ≥ 0.30 **and** intent match, plus a
+   small trust boost so an equally-relevant verified answer outranks ordinary history).
+3. **Grounded drafting + verification** — the LLM drafts a reply grounded in the top-3 with an
+   anti-"please DM us" instruction. `verify_draft()` **hard-fails** on an invented URL or an
+   unsupported completed-action promise (*"we've refunded you"*) → regenerate strictly → safe
+   synthesized fallback. Offline path synthesizes a fresh reply from all 3 references (never copies
+   verbatim, never leaks a real name/URL).
+4. **Safety + routing** — `detect_safety()` = LLM verifier ‖ NLP rules (whole-word + ±4-token window
+   + tech-vs-vehicle disambiguation + negation), fixing the classic `"app crash"` ≠ `"car crash"`
+   collision. Routing escalates to **HUMAN** on: safety signal, low confidence (`<0.55`), ≥2
+   frustration markers, or ≥3 prior messages — with a plain-English reason.
 
 ---
 
-## 🏛️ 14. System Architecture
+## 4. Human-in-the-loop platform (customer + admin)
+
+> **Problem:** AI-only support fails silently — a wrong-but-confident answer leaves the customer
+> stuck. **Solution:** a real two-surface platform where a dissatisfied customer is **automatically
+> escalated to a human**, the human resolves it with full context, and that **verified** resolution
+> becomes retrieval knowledge. The 4-stage pipeline is unchanged; this is a layer on top.
+
+Two Streamlit pages share **one on-disk backend** (no HTTP server). An escalation raised in the
+customer console appears live on the Human Support dashboard.
 
 ```mermaid
-flowchart TD
-    USER["👤 Judge / User (browser)"] --> UI["🖥️ Streamlit console — app.py<br/>(in-process, NO HTTP API)"]
-    UI -->|imports & calls| PIPE["🧠 src/pipeline.py"]
-    PIPE --> LLM["🔗 src/llm.py — Groq→Gemini chain"]
-    PIPE --> RET["🔎 src/retrieval.py — neural/hybrid/tfidf"]
-    RET --> CORP[("📚 data/uber_pairs.csv<br/>1,500 grounding cases")]
-    EVAL["📊 src/eval.py · judge.py · red_team.py"] --> PIPE
-    EVAL --> GOLD[("🏅 data/golden_set.csv<br/>200 held-out labels")]
-    EVAL --> REP["📄 reports/*.md"]
-    LLM -. optional .-> EXT["Groq / Google Gemini APIs"]
+flowchart LR
+    subgraph CUST["Customer UI — app.py"]
+      Q[Customer msg] --> AI[AI response]
+      AI --> FB{👍 / 👎 / 💬}
+    end
+    FB -->|👍| RAW[("feedback_log.jsonl<br/>RAW — not trusted")]
+    FB -->|👎 / 💬 / safety| ESCP[escalate]
+    ESCP --> CS[("Shared store<br/>data/conversations/*.json<br/>AI_ACTIVE→WAITING_FOR_HUMAN→<br/>HUMAN_ACTIVE→RESOLVED")]
+    CS --> HS["Human Support UI — pages/1_Human_Support.py<br/>queues · full context · reply · Resolve&Verify"]
+    HS --> VG{quality gate:<br/>human_verified + closed}
+    VG -->|pass| MEM[("resolution_memory.jsonl<br/>TRUSTED knowledge")]
+    VG -->|fail| X[discard]
+    MEM --> FUT["retrieve_similar() ranks verified first → grounds next answer"]
 ```
 
-> [!NOTE]
-> **This is a single-process Python + Streamlit app — there is no HTTP/REST API.** `app.py` imports
-> `src/pipeline.py` and calls it in-process. If `app.py` were deleted, the agent still runs headless
-> via `python -m src.eval` / `python -m src.demo_chain`.
+**Three trust tiers, kept strictly distinct** — nothing untrusted becomes knowledge:
+`raw feedback` → `validation` → **`human-verified resolution`** (the *only* trusted tier). A 👍, a
+raw 👎, an AI answer, or an *unresolved* escalation **never** enter the RAG memory. No model is
+retrained — this is retrieval augmentation.
 
-## 🗂️ 15. Data Pipeline
+- **State machine** is guarded (invalid transitions raise); a new customer message on a resolved chat
+  reopens it rather than corrupting state.
+- **Near-real-time without extra infra:** while a customer waits, the chat auto-refreshes via
+  `st.fragment(run_every=3)` and re-reads the shared store, so the agent's reply arrives without a
+  manual refresh. Interactive controls sit *outside* the timed fragment so typing is never interrupted.
+- **Verified live in Chrome** (two tabs, real Groq→Gemini) end-to-end: 👎 → escalation → human reply
+  received by the customer → Resolve & Verify → memory → future retrieval. Evidence:
+  [`reports/human_in_the_loop_qa.md`](reports/human_in_the_loop_qa.md) + `docs/screenshots/qa_*.png`.
+- **Honest limitations:** no auth between the two surfaces; same-conversation concurrent cross-process
+  writes are last-writer-wins (in-process-locked + atomic saves make the realistic 1-customer /
+  1-agent case safe); not load-tested.
+
+---
+
+## 5. Data pipeline & no-leakage
 
 ```mermaid
 flowchart TD
     RAW[("twcs.csv · ~2.8M rows")] -->|walk reply chains| PAIRS["55,182 (msg→reply) pairs"]
-    PAIRS -->|seed=42 split| G["📚 uber_pairs.csv<br/>1,500 grounding corpus"]
-    PAIRS -->|disjoint| POOL["uber_golden_pool.csv<br/>600 held-out"]
+    PAIRS -->|seed=42 split| G["📚 uber_pairs.csv · 1,500 grounding corpus"]
+    PAIRS -->|disjoint| POOL["uber_golden_pool.csv · 600 held-out"]
     POOL -->|seed=7 sample + hand-label| GOLD["🏅 golden_set.csv · 200"]
     G --> RETR["retrieval + fine-tune training"]
     GOLD --> EV["evaluation (test only)"]
-    EV --> FA["failure analysis + reports"]
 ```
-**No leakage:** the grounding corpus (retrieval/training) and the golden set (evaluation) are
-**disjoint by construction**. The golden set is never trained or retrieved on.
 
-## 📚 16. Dataset
-- **Source:** *Customer Support on Twitter* (Kaggle), `data/twitter_support/twcs.csv` (~516 MB, not committed).
-- **Brand:** `Uber_Support` — 56,270 outbound / 39,443 inbound.
-- **Reconstruction:** walk `in_response_to_tweet_id` chains → **55,182** `(customer_msg → brand_reply)` pairs → split into a 1,500 grounding corpus + 600 held-out pool.
-
-## 🏅 17. Golden Evaluation Set
-- **200** messages sampled (`seed=7`) from the **held-out** pool, **hand-labeled** into the 7 intents.
-- **22%** flagged **ambiguous/mixed** (kept, but metrics reported full-set *and* non-ambiguous).
-- Distribution mirrors reality (billing-heavy): `billing 55 · general 41 · trip 31 · service 31 · delivery 16 · account 15 · safety 11`.
-- Reproducible: `python -m src.build_golden`.
-
-## 📏 18. Baselines
-Two required baselines + the advanced models, all scored on the **same** golden set:
-1. **Trivial** — majority class.
-2. **TF-IDF + Logistic Regression** (weak-labeled).
-3. Rule-based classifier · 4. Fine-tuned DistilBERT · 5. Few-shot LLM.
+**No leakage by construction:** the grounding corpus (retrieval/training) and the golden set
+(evaluation) are **disjoint**. The golden set is never retrieved on or trained on — otherwise
+retrieval/draft metrics would be inflated. Source: *Customer Support on Twitter* (Kaggle),
+`Uber_Support` brand, threads reconstructed via `in_response_to_tweet_id`.
 
 ---
 
-## 📊 19. Results
+## 6. Golden evaluation set
+*(Deliverable 2 — 150–250 hand-labelled examples with a sampling & labelling note)*
 
-### Intent classification (200-example golden set)
+- **200 messages**, sampled with **`seed=7`** from the **600-example held-out pool** (disjoint from
+  the retrieval corpus), each **hand-labelled** into one of the 7 intents. Reproduce:
+  `python -m src.build_golden`.
+- **Sampling:** random from the held-out pool (not cherry-picked), so the distribution mirrors real
+  `Uber_Support` traffic — deliberately **billing-heavy**, not artificially balanced:
+
+  `billing 55 · general 41 · trip 31 · service 31 · delivery 16 · account 15 · safety 11`
+- **Labelling protocol:** I read each raw tweet and assigned the single best intent from definitions
+  derived by *reading real tweets* (not invented top-down). **44 / 200 (22%)** are genuinely
+  **ambiguous/mixed** (e.g. *"driver cancelled AND charged me"* — billing or trip?). These are
+  **kept and flagged**, not discarded — every metric is reported on the **full set AND the
+  non-ambiguous subset** so the headline can't quietly benefit from lucky ambiguous calls.
+- **Single-annotator caveat (honest):** one labeller → no human–human agreement ceiling yet; adding a
+  second annotator is in [§11](#11-what-id-do-with-one-more-week).
+
+---
+
+## 7. Evaluation harness + LLM-as-judge
+*(Deliverable 3 — automated metrics + a judge rubric + judge↔human agreement)*
+
+**Automated metrics** — `python -m src.eval` writes [`reports/eval_results.md`](reports/eval_results.md):
+accuracy, macro-F1, per-class precision/recall, confusion matrix, DM-deflection rate, and a routing
+audit. `python -m src.retrieval_eval` scores retrieval; `python -m src.red_team` runs 12 adversarial
+checks (keyword collisions, negation, prompt injection, garbage input) — **12/12 pass**.
+
+**LLM-as-judge rubric** — `python -m src.judge` grades 25 fixed drafts on three binary dimensions and
+compares to my hand ratings ([`reports/judge_agreement.md`](reports/judge_agreement.md)):
+
+| Rubric dimension | Question the judge answers | % agreement | Cohen's κ | Verdict |
+|---|---|---:|---:|---|
+| **grounded** | is the reply supported by the retrieved cases? | 48% | **0.085** | ≈ chance — **not trustworthy** |
+| **helpful** | does it resolve *this* customer's issue (not a DM deflection)? | 60% | **~0.22–0.30** | weak / *fair* only |
+| **polite** | is the tone courteous & on-brand? | 96% | **0.000** | no variance → meaningless |
+
+**Judge↔human agreement, read honestly:** the judge and I *disagree* on `grounded` (I scored topical
+fit 0.84; the judge treated DM-deflections as ungrounded 0.40 → κ≈chance). `polite` is meaningless
+because every templated Uber reply is courteous (zero variance). Only `helpful` carries weak signal,
+and even there the judge is systematically stricter than me. **Conclusion: report classification F1
+(checked against hand labels) as the headline; treat the judge's reply-quality scores as indicative
+only.** Judge ratings use deterministic rules-mode drafts + fixed human ratings so runs are
+apples-to-apples.
+
+---
+
+## 8. Results vs baselines
+
+**Intent classification (200-example golden set)** — two required baselines (trivial + simple) plus
+the advanced models, all scored on the **same** hand labels:
 
 | Model | Accuracy | Macro-F1 | Safety recall | Notes |
 |---|---:|---:|---:|---|
-| Trivial (majority) | 0.275 | 0.062 | 0.00 | floor |
-| TF-IDF + LogReg | 0.535 | 0.493 | 0.09 | distills the rules |
-| Rule-based (context-aware) | 0.555 | 0.533 | 0.27 | transparent, offline |
+| Trivial (majority class) | 0.275 | 0.062 | 0.00 | floor baseline |
+| TF-IDF + LogReg (simple) | 0.535 | 0.493 | 0.09 | trained on rule weak-labels |
+| Rule-based (context-aware) | 0.555 | 0.533 | 0.27 | transparent, offline, zero-key |
 | 🧪 Fine-tuned DistilBERT | 0.575 | 0.549 | 0.27 | real SFT; beats rules, **trails LLM** |
 | 🏆 **Few-shot LLM** | **0.675** | **0.690** | **1.00** | production classifier |
 
-**Few-shot LLM lift: +0.157 macro-F1 over TF-IDF.** Biggest real win: `safety_incident` recall
-**0.36 → 1.00** (the class we least want to miss). *Reproduce:* `python -m src.eval`.
+*Reproduce: `python -m src.eval`. The LLM row needs provider quota; on a free-tier 429 the run skips
+it (baselines still written) and reports the offline path — never a fabricated LLM score.*
 
-### Retrieval (200 golden queries · intent-match@3 proxy)
+- **Few-shot LLM lift = +0.157 macro-F1 over TF-IDF** — the only *real* gain (see §9 for why the
+  rule↔TF-IDF +0.040 is not). Biggest win: `safety_incident` recall **0.36 → 1.00**.
+- Non-ambiguous subset (156 items): rule-based rises 0.533 → **0.583**, confirming ambiguity, not
+  model error, drives much of the residual.
+
+**Retrieval (200 golden queries · intent-match@3 proxy)** — `python -m src.retrieval_eval`:
 
 | Method | intent-match@3 | ms/query |
 |---|---:|---:|
@@ -260,264 +297,159 @@ Two required baselines + the advanced models, all scored on the **same** golden 
 | Hybrid (TF-IDF+LSA+rerank) | 0.615 | 4.5 |
 | 🏆 **Sentence-Transformers (neural)** | **0.715** | 38.3 |
 
-*Reproduce:* `python -m src.retrieval_eval`. Example semantic win: *"billed my card twice"* retrieves
-*"charged for a trip I did not take"* — a match TF-IDF misses.
-
-## 🔍 20. Failure Analysis
-Full write-up: [`reports/failure_analysis.md`](reports/failure_analysis.md). Top modes (measured):
-1. **`general_query` is a weak catch-all** in every classifier (LLM recall ~0.34; rules dump vague messages here).
-2. **`trip_issue` under-performs** (terse ride complaints lack keywords).
-3. **Safety recall is classifier-dependent** — rules 0.27 vs LLM 1.00 (never quote one "safety number" without saying which model).
-4. **billing ↔ delivery confusion** on UberEats refund cases (genuinely ambiguous).
-5. **DM-deflection** — most historical replies are "please DM us", which the retriever inherits.
-
-## ⚠️ 21. What's misleading about my headline number
-> **This section is mandatory and I take it seriously.**
-- **"Grounded" is cheap here.** ~**61%** of the ground-truth brand replies are content-free *"please DM us"* deflections, so ~**65%** of naive drafts inherit that. A high groundedness/similarity score can mean *"reproduced a lazy template"*, not *"helped"*. The verifier + anti-DM prompt improve **quality**, but raw DM-rate stays high **because DMing billing/safety is genuinely correct** — so DM-rate itself is a misleading metric.
-- **The rules-vs-TF-IDF gap (+0.012) is fake** — TF-IDF was trained on the rules' own weak labels. Only the **LLM's +0.157** is a real gain.
-- **Fine-tuning did *not* win** (0.549 vs LLM 0.690). Reported honestly; kept as an offline fallback.
-- **The golden set is 22% ambiguous** — headline accuracy benefits from however those happened to be labeled.
-
-## ⚖️ 22. LLM-as-Judge & Human Agreement
-`python -m src.judge` grades 25 drafts and compares to hand ratings ([`reports/judge_agreement.md`](reports/judge_agreement.md)):
-
-| Dimension | % agreement | Cohen's κ | Verdict |
-|---|---:|---:|---|
-| grounded | 48% | **0.085** | ≈ chance — **not trustworthy** |
-| helpful | 60–64% | **~0.22–0.30** | weak/fair only |
-| polite | 96% | 0.000 (no variance) | meaningless (all replies polite) |
-
-> **Do not trust the judge blindly.** Its per-item "grounded" score barely correlates with human
-> judgment — so we report LLM *classification* F1 (checked vs hand labels) as the headline, and treat
-> the judge's reply-quality scores as indicative only.
-
-## 🧨 24. Red-Team Testing
-`python -m src.red_team` → **12/12** adversarial checks pass ([`reports/red_team.md`](reports/red_team.md)):
-keyword collisions (`app crash` ≠ `car crash`), negation (`no accident`), **prompt injection** (cannot
-force an out-of-taxonomy intent or corrupt the routing schema), emoji/garbage/empty input, elongation.
-
-## 🎬 25. Live Demo (headless)
-```bash
-python -m src.demo_chain          # prints each stage's real input → output hand-off
-python -m src.demo_chain --rules  # force the offline path (no API key)
-```
-
-## 🖥️ 26. Streamlit UI
-
-A professional internal-console layout: **left** = compact live "Agent Run" pipeline (each stage shows
-model/method, confidence, evidence, verifier verdict, and a **"Why:"** rationale); **right** = large
-customer↔AI chat. Two independent scroll areas, sticky header, real-time stage status — **all values
-from the real pipeline**.
-
-```bash
-streamlit run app.py     # opens http://localhost:8501
-```
-
-| View | Placeholder |
-|---|---|
-| Full console | `docs/screenshots/console.png` |
-| Agent Run panel + "Why" lines | `docs/screenshots/pipeline_why.png` |
-| Safety → HUMAN escalation | `docs/screenshots/routing_human.png` |
-| Groq → Gemini fallback | `docs/screenshots/fallback_chain.png` |
-
-<!-- ![Console](docs/screenshots/console.png) -->
+Example semantic win: *"billed my card twice"* retrieves *"charged for a trip I did not take"* — a
+match TF-IDF misses. *(Proxy caveat: intent-match uses the rule classifier to label retrieved pairs,
+so it measures topical alignment, not human-judged usefulness.)*
 
 ---
 
-## 📁 27. Project Structure
+## 9. What's misleading about my headline number *(mandatory)*
 
-```
-hiver2/
-├── app.py                      # 🖥️ Streamlit console (thin viewer over src/pipeline.py; NO HTTP API)
-├── README.md · ARCHITECTURE.md · DECISION_LOG.md · VALIDATION_REPORT.md
-├── requirements.txt            # base deps (CPU, no downloads)
-├── .env.example                # LLM key template (chain: GROQ → GEMINI)
-│
-├── src/                        # ✅ the graded, runnable pipeline
-│   ├── pipeline.py             #   classify_intent · retrieve_similar · draft_reply · verify_draft
-│   │                           #   detect_safety · route_decision  (stable contracts)
-│   ├── llm.py                  #   dual-provider fallback chain (Groq → Gemini → rules)
-│   ├── preprocess.py           #   context-preserving text cleaning
-│   ├── retrieval.py            #   TF-IDF · LSA · hybrid · neural (auto)
-│   ├── baseline_trivial.py     #   baseline 1 (majority class)
-│   ├── baseline_tfidf.py       #   baseline 2 (TF-IDF + LogReg)
-│   ├── build_pairs.py          #   thread reconstruction → grounding corpus + held-out pool
-│   ├── build_golden.py         #   200-example hand-labeled golden set (seed-reproducible)
-│   ├── eval.py                 #   metrics vs baselines · confusion · DM-rate · routing audit
-│   ├── judge.py                #   LLM-as-judge + human agreement (Cohen's κ)
-│   ├── retrieval_eval.py       #   tfidf vs lsa vs hybrid vs neural (intent-match@k)
-│   ├── red_team.py             #   adversarial suite (12 checks)
-│   └── demo_chain.py           #   headless live agent-chain demo
-│
-├── advanced/                   # 🧪 real DistilBERT fine-tuning (optional track)
-│   ├── build_dataset.py · train_classifier.py · finetune_eval_report.json
-│   ├── requirements.txt        #   torch · transformers · sentence-transformers
-│   └── models/intent_distilbert/   # trained model artifact
-│
-├── data/                       # golden_set.csv · uber_pairs.csv · uber_golden_pool.csv · human_ratings.csv
-├── reports/                    # eval_results · failure_analysis · model_comparison · judge_agreement · red_team
-│   └── baseline/               #   preserved pre-upgrade snapshot (before/after)
-├── notebooks/                  # 01_explore · 02_threads · 03_golden · 04_baselines (exploration only)
-├── tests/                      # test_pipeline.py · test_advanced.py  (20 tests)
-└── docs/screenshots/           # UI screenshots for this README
-```
+> This section is mandatory and I take it seriously — full write-up in
+> [`reports/failure_analysis.md`](reports/failure_analysis.md).
 
-## 🛠️ 28. Technology Stack
+1. **"Grounded" is cheap here — the "please DM us" trap.** ~**61%** of real historical brand replies
+   are content-free *"send us a DM"* deflections, so ~**53%** of offline drafts inherit that. A high
+   groundedness/similarity score can mean *"reproduced a lazy template"*, not *"helped"*. The honest
+   metric is `helpful`, which is far lower; the UI flags a ⚠ when a draft is a deflection.
+2. **The rule-vs-TF-IDF gap is fake.** TF-IDF/LogReg was trained on the **rule classifier's own weak
+   labels**, so it distills the rules — their near-tie (+0.040 macro-F1) is expected and proves
+   nothing about correctness. **Only the LLM's +0.157 is a real gain.**
+3. **The +0.157 is not uniform.** The LLM wins big on `safety_incident` (0.36→1.00) and
+   `service_complaint` (0.32→0.90) but *drops* on `general_query` (recall → **0.34**), reclassifying
+   vague follow-ups as complaints. A single macro-F1 hides that trade.
+4. **Safety recall is classifier-dependent.** Rules **0.27–0.36** vs LLM **1.00** — a 3× gap. Any
+   single "safety coverage" number is meaningless unless it says *which path* produced it.
+5. **The golden set is 22% ambiguous & billing-heavy.** Headline accuracy is dominated by billing and
+   benefits from however the ambiguous items happened to be labelled — hence the full-set /
+   non-ambiguous split.
 
-| Technology | Actual role in this repo | Why used |
-|---|---|---|
-| **pandas / numpy** | load 516 MB CSV, reconstruct threads, vector math | standard, fast, no infra |
-| **scikit-learn** | TF-IDF, LogReg baseline, **LSA/SVD**, cosine, P/R/F1, Cohen's κ | one dependency covers baselines + metrics |
-| **sentence-transformers** | neural retrieval (`all-MiniLM-L6-v2`) — *auto, gated* | best retrieval by evidence (+0.105) |
-| **transformers / torch** | real DistilBERT fine-tuning (`advanced/`) | genuine SFT, not few-shot-called-fine-tuning |
-| **openai (SDK)** | OpenAI-compatible client for **Groq** & **Gemini** | one client, two free providers, easy fallback |
-| **streamlit** | live support console (`app.py`) | fastest way to a real, inspectable demo UI |
-| **python-dotenv** | load API keys from `.env` | keeps secrets out of code |
-| **pytest / pyflakes** | 20 tests + static analysis | proof the contracts hold |
+---
 
-## ⚙️ 29. Local Setup
+## 10. Failure analysis — top 5 modes
+*(Real examples + hypotheses; from the confusion matrices in `reports/eval_results.md`)*
 
-> ⏱️ **Reproduce headline results in under 15 minutes.** Base pipeline needs **no API key** and **no model downloads**.
+| # | Failure mode | Real example | Hypothesis |
+|---|---|---|---|
+| 1 | **`general_query` catch-all collapses** (LLM recall 0.34) | *"your services are going down the drain"* → labelled general, LLM says `service_complaint` (20 such) | content-free rants have no intent keywords; LLM over-reads sentiment, rules dump them *into* general — opposite failures |
+| 2 | **`trip_issue` weak in both** (F1 rules 0.305 / LLM 0.525) | *"no music no AC 1 star"* → pulled to safety/service | terse ride gripes lack ride-specific tokens |
+| 3 | **Safety recall depends on the classifier** | *"male drivers keep hitting on me"* → missed by rules, caught only by the LLM verifier | keyword-free harassment needs semantic understanding; rule path structurally can't see it |
+| 4 | **billing ↔ delivery confusion** | *"UberEats order rejected but I was charged"* → straddles both | genuinely mixed intent; refund + food-order overlap |
+| 5 | **DM-deflection drafts (~53%)** | *"please DM us your details"* even when intent is correct | the retriever inherits the corpus's dominant lazy template — correct intent ≠ useful answer |
+
+---
+
+## 11. What I'd do with one more week
+- **Distil the LLM teacher into DistilBERT** on LLM-labelled data (not rule weak-labels) — the honest
+  way to get an offline model that beats the rule/TF-IDF tie.
+- **Filter/down-weight DM-deflections** out of the grounding corpus so drafts ground in cases that
+  actually *resolved* something (attacks failure mode #5 directly).
+- **Cross-encoder reranker** on top of neural retrieval for real relevance (not the intent-match proxy).
+- **Second annotator** on a larger golden set to measure human–human agreement — the ceiling for
+  judge↔human agreement, without which §7's κ numbers lack a reference.
+- **Per-intent thresholds** for escalation and verified-resolution gating (currently global constants),
+  learned from a labelled escalation set.
+
+---
+
+## 12. Decision log
+*(Deliverable 5 — non-obvious choices and why; full version in [`DECISION_LOG.md`](DECISION_LOG.md))*
+
+1. **Brand = `Uber_Support`** — mixes low-risk billing with high-risk safety, so routing is meaningful.
+2. **Golden pool disjoint from grounding corpus** — prevents retrieval leakage inflating metrics.
+3. **One brand reply per customer tweet (first response)** — clean (msg→reply) pairs, no double-counting.
+4. **7 intents from reading real tweets**, distribution left imbalanced (55/200 billing) to match reality.
+5. **Ambiguous items labelled AND flagged, not dropped** — report full-set + non-ambiguous side by side.
+6. **Rule classifier kept as baseline + zero-key fallback** — transparent, runs with no API key.
+7. **Provider-agnostic LLM client** (Groq → Gemini → OpenRouter/OpenAI) — free, no lock-in, no download.
+8. **`method` field on every stage** — states LLM vs rule path; a grader can never mistake one for the other.
+9. **TF-IDF baseline trained on rule weak-labels** — documented; its +0.040 tie is distillation, not a win.
+10. **Routing = 4 signals** (confidence, safety, frustration, repeat-contact), each an auditable clause.
+11. **Context-aware `detect_safety()`** replaced blind keywords (whole-word + window + negation + LLM verifier).
+12. **DM-deflection rate is a first-class metric** — the single most important honesty check, in code + report.
+13. **Judge↔human uses deterministic drafts + fixed human ratings** — apples-to-apples, reproducible.
+14. **`app.py` has zero agent logic** — renders `src.pipeline` outputs only; deleting it leaves the agent working.
+15. **DistilBERT fine-tuned but NOT adopted** (0.549 < 0.690) — kept as an offline fallback, reported honestly.
+16. **Human feedback → retrieval knowledge, not retraining** — verified resolutions only; 👍/raw-👎 never trusted.
+17. **Shared file store + guarded state machine** as the "backend" — no HTTP server, still multi-surface.
+18. **Escalation policy:** explicit 👎 / 💬 human-request escalates immediately; first-contact complaints do not.
+19. **Groundedness verifier hard-fails on invented URLs / fake completed-action promises** → regen → safe fallback.
+20. **Fail-fast LLM client + graceful eval skip** on quota exhaustion — baselines still written, never fabricated.
+
+---
+
+## 13. Run it locally
+
+> ⏱️ **Base pipeline needs no API key and no model downloads.**
 
 ```bash
 # 1. environment
 python -m venv venv
-venv\Scripts\activate            # Windows  ·  macOS/Linux: source venv/bin/activate
+venv\Scripts\activate                 # macOS/Linux: source venv/bin/activate
 pip install -r requirements.txt
+set PYTHONUTF8=1                       # Windows; PowerShell: $env:PYTHONUTF8=1
 
-# 2. Windows consoles: force UTF-8 (emoji-heavy tweets)
-set PYTHONUTF8=1                 # PowerShell: $env:PYTHONUTF8=1  ·  bash: export PYTHONUTF8=1
+# 2. build data → golden set → evaluate → test   (data/*.csv already committed; skip build if present)
+python -m src.build_pairs             # needs data/twitter_support/twcs.csv (~516 MB, not committed)
+python -m src.build_golden            # 200 labelled examples
+python -m src.eval                    # writes reports/eval_results.md
+python -m pytest tests/ -q            # 66 tests
 
-# 3. build data → golden set → evaluate → test
-python -m src.build_pairs        # ~1 min (reads twcs.csv)
-python -m src.build_golden       # 200 labeled examples
-python -m src.eval               # writes reports/eval_results.md
-python -m pytest tests/ -q       # 20 tests
-
-# 4. live UI
-streamlit run app.py             # http://localhost:8501
+# 3. run the app (customer console + Human Support dashboard in the sidebar page-nav)
+streamlit run app.py                  # http://localhost:8501
 ```
 
-**Optional advanced track** (neural retrieval + fine-tuning; downloads model weights):
+**Optional LLM chain:** copy `.env.example` → `.env`, add `GROQ_API_KEY` and/or `GEMINI_API_KEY`
+(free tiers). Without a key the whole system runs on the reported rules path.
+
+**Optional advanced track** (neural retrieval + fine-tuning; downloads weights):
 ```bash
 pip install -r advanced/requirements.txt
-python -m advanced.build_dataset
-python -m advanced.train_classifier     # real DistilBERT SFT → finetune_eval_report.json
-python -m src.retrieval_eval            # tfidf vs lsa vs hybrid vs neural
+python -m advanced.train_classifier   # real DistilBERT SFT
+python -m src.retrieval_eval          # tfidf vs lsa vs hybrid vs neural
 ```
 
-## 🔑 30. Environment Variables
+**Other entry points:** `python -m src.demo_chain` (headless live chain) · `python -m src.judge`
+(LLM-judge vs human) · `python -m src.red_team` (12 adversarial checks) · `python -m src.memory_eval`
+(verified-resolution retrieval).
 
-Copy `.env.example` → `.env`. The base pipeline runs **without any key** (rules path). Add keys to
-enable the LLM chain — set any subset; they're tried in order:
+---
 
-| Variable | Provider | Priority | Free key |
-|---|---|---|---|
-| `GROQ_API_KEY` | Groq (`gpt-oss-120b`) | 1 (primary) | https://console.groq.com/keys |
-| `GEMINI_API_KEY` | Google Gemini (`gemini-3.6-flash`) | 2 (fallback) | https://aistudio.google.com/apikey |
-| `OPENROUTER_API_KEY` / `OPENAI_API_KEY` | optional | 3 / 4 | — |
+## 14. Project structure
 
-## 🧪 31. Testing
-
-```bash
-python -m pytest tests/ -q       # 20/20 — contracts, routing, crash-collision, edge inputs,
-                                 #         LLM-failure fallback, preprocess, retrieval, verifier
-python -m src.red_team           # 12/12 adversarial checks
-python -m pyflakes src/*.py app.py   # clean
 ```
-
-## ✅ 32. Validation
-Full audit + matrices in [`VALIDATION_REPORT.md`](VALIDATION_REPORT.md): clean rebuild from raw CSV
-reproduces the golden set; Streamlit driven via `AppTest`; LLM path verified live; bad/missing key →
-reported rules fallback; secrets scan clean.
-
-## 🧯 33. Error Handling
-
-```mermaid
-flowchart LR
-    T["LLM call"] --> OK{"success?"}
-    OK -- yes --> C["use result · method = llm:provider"]
-    OK -- no (429/timeout/empty/bad-json) --> N{"next provider?"}
-    N -- yes --> T
-    N -- no --> F["offline path · method = rules (llm_error: …)"]
+hiver2/
+├── app.py                       # 🖥️ Customer console (thin viewer over src/pipeline.py)
+├── pages/1_Human_Support.py     # 👤 Human Support dashboard (shares the conversation store)
+├── src/
+│   ├── pipeline.py              # classify · retrieve · draft · verify · detect_safety · route
+│   ├── llm.py                   # Groq → Gemini → rules fallback chain
+│   ├── retrieval.py             # TF-IDF · LSA · hybrid · neural (auto)
+│   ├── resolution_retrieval.py  # gated retrieval over verified memory
+│   ├── memory.py                # human-verified resolution memory (trust gate, dedup, conflict flag)
+│   ├── satisfaction.py · escalation.py   # dissatisfaction detection + escalation decision engine
+│   ├── conversation_store.py    # shared file-backed store + state machine  (new)
+│   ├── feedback_log.py          # raw feedback tier  (new)
+│   ├── ui_components.py         # shared CSS + timeline rendering  (new)
+│   ├── config.py                # all tunable thresholds/weights
+│   ├── eval.py · judge.py · retrieval_eval.py · red_team.py · memory_eval.py   # evaluation harness
+│   ├── build_pairs.py · build_golden.py · baseline_trivial.py · baseline_tfidf.py
+│   └── demo_chain.py
+├── advanced/                    # 🧪 real DistilBERT fine-tuning (optional)
+├── data/                        # golden_set.csv · uber_pairs.csv · resolution_memory.jsonl
+├── reports/                     # eval_results · failure_analysis · judge_agreement · retrieval_eval
+│   └── human_in_the_loop_qa.md  # live Chrome QA report for the customer↔admin platform
+├── tests/                       # 66 tests (pipeline, feedback loop, conversation store, e2e UI)
+└── docs/screenshots/            # qa_*.png — browser QA evidence
 ```
-
-| Failure | Behavior |
-|---|---|
-| Missing/invalid API key | rules path; header shows offline |
-| LLM rate-limit / timeout / empty | fail-fast → next provider → rules; **method reported** |
-| Malformed LLM JSON | robust balanced-brace parser; else offline fallback |
-| Missing retrieval corpus | clear `FileNotFoundError` → run `build_pairs` |
-| Empty / huge / emoji / garbage input | handled, no crash (red-team verified) |
-
-## 🔒 34. Security
-- API keys via `.env` (**git-ignored**); `.env.example` has placeholders only; no secrets in code or reports.
-- Prompt-injection tested (red-team): cannot change the intent taxonomy or routing schema.
-- User input is escaped in the UI; no shell/file execution from input.
-
-## ⚡ 35. Performance (local prototype, CPU)
-
-| Stage | Approx latency |
-|---|---|
-| TF-IDF retrieval | ~2 ms/query |
-| Neural retrieval | ~38 ms/query (after model load) |
-| Rule classify / safety | <5 ms |
-| LLM stage | network-bound (~0.5–3 s/call) |
-
-> These are **local prototype** numbers, not production SLAs. Production scaling (batching, a vector
-> DB, async, caching) is listed under [Future Improvements](#-38-future-improvements).
-
-## 🏭 36. Production Considerations
-Graceful degradation, reproducible seeds, secrets via env, CPU-only base. **Not included** (out of
-scope for a take-home): auth, rate limiting, horizontal scaling, a hosted API server, a managed vector DB.
-
-## 🚧 37. Limitations (honest)
-- `general_query` recall is weak across all classifiers.
-- LLM judge agreement is only *fair* → reply-quality scores are indicative, not authoritative.
-- Fine-tuned model trails the LLM.
-- Free-tier LLM quotas can exhaust mid-session → pipeline falls back to the offline path (reported).
-- Retrieval intent-match is a **proxy** (no human relevance labels).
-
-## 🔭 38. Future Improvements
-Distill the LLM teacher into DistilBERT (vs rules weak-labels) · cross-encoder reranker · filter
-DM-deflections out of the grounding corpus · larger golden set + second annotator (human–human κ ceiling)
-· hosted vector DB + async batching for scale.
-
-## 🗒️ 39. Decision Log
-20 non-obvious decisions with rationale in [`DECISION_LOG.md`](DECISION_LOG.md).
-
-## 📜 40. Open-Source Attribution
-
-| Dependency | Role | License |
-|---|---|---|
-| pandas, numpy, scikit-learn | data, baselines, metrics | BSD-3-Clause |
-| streamlit | demo UI | Apache-2.0 |
-| openai (SDK) | Groq/Gemini client | Apache-2.0 |
-| transformers, sentence-transformers | fine-tuning, embeddings | Apache-2.0 |
-| torch | model backend | BSD-3-Clause |
-| python-dotenv | env loading | BSD-3-Clause |
-| pytest | tests | MIT |
-
-*Dataset: "Customer Support on Twitter" via Kaggle — used under its dataset terms. Verify each package's license before redistribution.*
-
-## 📄 41. License
-Released under the **MIT License** (project code). Dataset and model weights retain their own licenses.
-
-## 🙏 42. Acknowledgements
-Kaggle *Customer Support on Twitter* dataset · Groq & Google Gemini free tiers · Hugging Face
-`sentence-transformers` / `distilbert-base-uncased` · the scikit-learn & Streamlit communities.
 
 ---
 
 <div align="center">
 
-### 🧭 For judges — 60-second orientation
+**PROOF > CLAIMS · EVIDENCE > MARKETING · REPRODUCIBILITY > COMPLEXITY**
 
-**Run** `python -m src.eval` (results) → `python -m src.demo_chain` (live chain) → `streamlit run app.py` (UI).
-**Read** [`reports/model_comparison.md`](reports/model_comparison.md) (before/after) →
-[`reports/failure_analysis.md`](reports/failure_analysis.md) (honesty).
-**Every number is measured, every fallback is reported, every weakness is documented.**
-
-*PROOF > CLAIMS · EVIDENCE > MARKETING · REPRODUCIBILITY > COMPLEXITY*
+*Every number is measured, every fallback is reported, every weakness is documented.*
+Released under the **MIT License** (project code). Dataset & model weights retain their own licenses.
 
 </div>

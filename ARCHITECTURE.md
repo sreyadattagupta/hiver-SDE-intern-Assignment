@@ -121,6 +121,27 @@ flowchart LR
 | 3 | `draft_reply` | after stages 1–2 | message + retrieved | LLM grounded in retrieved cases → JSON, or reuse closest reply | `src/llm.py` (LLM) **or** rules | `{draft, cited_example_id, justification, method}` | display layer | LLM error → reuse closest reply, reported in `method` | reuses closest historical reply |
 | 4 | `route_decision` | after stage 1 | classification + message + thread history | combine 4 signals into AI/HUMAN + reason | pure Python | `{decision, reason}` | display layer | n/a (no external dep) | n/a |
 
+## Feedback / human-verified resolution memory layer
+
+Additive to the four stages above; the base pipeline is unchanged. This is **retrieval augmentation
+from verified human resolutions**, not model training.
+
+| Module | Responsibility |
+|---|---|
+| `src/config.py` | All thresholds/weights (similarity, trust boost, conflict, dissatisfaction, repeat) — one place, justified + tested. |
+| `src/satisfaction.py` | Explicit + implicit dissatisfaction detection (LLM verifier or NLP rules; honest `method`). Bare technical complaint ≠ dissatisfaction. |
+| `src/escalation.py` | `decide()` — transparent AI-vs-HUMAN engine returning `{route, reason, confidence, signals}` (superset of `route_decision`). |
+| `src/memory.py` | Verified-resolution JSONL store: `build_record` / `add_resolution` (trust gate + content-hash dedup) / `find_conflicts` / `load_resolutions`. |
+| `src/resolution_retrieval.py` | Retrieves verified resolutions in the fitted TF-IDF space; gated by threshold + intent + `verified`. |
+| `src/ui_state.py` | Streamlit-free state transitions: `apply_feedback` (feedback→escalation policy) and `build_escalation_record`. |
+| `src/memory_eval.py` | Deterministic Recall@K / ranking / gating evaluation → `reports/memory_eval.md`. |
+
+**Two-layer retrieval merge** — `pipeline.retrieve_similar(message, k, method, intent, use_memory,
+memory_path)` now queries (1) the verified-resolution layer and (2) the historical layer, applies
+`VERIFIED_TRUST_BOOST` to eligible verified items, ranks, and returns the top-k with added `source`
+(`human_resolution`|`historical`) and `verified` fields. When the memory file is empty the output is
+byte-for-byte the historical-only result (back-compat; existing `test_retrieve_contract` still holds).
+
 ## Data-flow guarantees (verified)
 - **No leakage:** `uber_pairs.csv` (retrieval) and `uber_golden_pool.csv` (golden source) are
   disjoint by construction (`build_pairs.py` split) — the agent is never evaluated on messages

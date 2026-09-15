@@ -14,3 +14,7 @@ advanced/models/
 .pytest_cache/
 .playwright-mcp/
 *.log
+
+# runtime artifacts (human-in-the-loop backend)
+data/conversations/
+data/feedback_log.jsonl

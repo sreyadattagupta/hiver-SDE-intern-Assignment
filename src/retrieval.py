@@ -52,6 +52,25 @@ def _tfidf_index():
     return vec, matrix
 
 
+def tfidf_vectors(texts):
+    """Transform arbitrary texts into the ALREADY-FITTED corpus TF-IDF space (no refit).
+    Used by the verified-resolution retrieval layer so its scores share the historical space."""
+    vec, _ = _tfidf_index()
+    cleaned = [clean_for_embedding(t) for t in texts]
+    return vec.transform(cleaned)
+
+
+def tfidf_cosine(query: str, texts: list) -> np.ndarray:
+    """Cosine similarity of `query` vs each text in the fitted TF-IDF space.
+    Returns an empty array when `texts` is empty (deterministic, no exceptions)."""
+    if not texts:
+        return np.zeros(0)
+    vec, _ = _tfidf_index()
+    q = vec.transform([clean_for_embedding(query)])
+    m = tfidf_vectors(texts)
+    return cosine_similarity(q, m)[0]
+
+
 @functools.lru_cache(maxsize=1)
 def _lsa_index():
     vec, matrix = _tfidf_index()

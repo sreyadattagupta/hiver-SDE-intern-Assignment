@@ -328,15 +328,42 @@ def classify_intent(message: str, mode: str = "auto") -> dict:
 
 # =========================== RETRIEVAL ===========================
 
-def retrieve_similar(message: str, k: int = 3, method: str = "auto") -> list:
-    """Top-k historical (customer_msg -> brand_reply) pairs.
+def retrieve_similar(message: str, k: int = 3, method: str = "auto", intent: str | None = None,
+                     use_memory: bool = True, memory_path: str | None = None) -> list:
+    """Top-k grounding evidence, merging two layers (spec Step 10):
+      1. human-verified resolution memory (higher trust) — gated by similarity threshold + intent
+      2. historical (customer_msg -> brand_reply) pairs from the 1500-pair corpus
 
-    Delegates to src/retrieval.py. Default 'auto' = neural sentence-transformer embeddings when
-    available (best by evidence: intent-match@3 0.715 vs 0.610 TF-IDF, reports/retrieval_eval.md),
-    else the download-free hybrid (TF-IDF + LSA + lexical rerank). Returns the stable contract
-    {pair_id, customer_msg, brand_reply, score} plus a 'method' field naming the backend used."""
-    from . import retrieval
-    return retrieval.retrieve(message, k=k, method=method)
+    Verified items receive a small additive trust boost (config.VERIFIED_TRUST_BOOST) so an equally
+    relevant verified resolution outranks an ordinary historical reply — but a much-more-relevant
+    historical reply can still win. Returns the stable contract {pair_id, customer_msg, brand_reply,
+    score} plus 'method', 'source' ('human_resolution'|'historical'), and 'verified'. When the memory
+    is empty the result is identical to the historical-only retriever (back-compat)."""
+    from . import retrieval, resolution_retrieval, config
+
+    historical = retrieval.retrieve(message, k=k, method=method)
+    for h in historical:
+        h.setdefault("source", "historical")
+        h.setdefault("verified", False)
+
+    verified = []
+    if use_memory:
+        try:
+            verified = resolution_retrieval.retrieve_resolutions(message, intent=intent, k=k, path=memory_path)
+        except Exception:
+            verified = []   # memory retrieval must never break the core pipeline
+
+    if not verified:
+        return historical
+
+    merged = []
+    for v in verified:
+        item = dict(v)
+        item["score"] = round(item["score"] + config.VERIFIED_TRUST_BOOST, 4)
+        merged.append(item)
+    merged.extend(historical)
+    merged.sort(key=lambda r: r["score"], reverse=True)
+    return merged[:k]
 
 
 # =========================== DRAFT GENERATION ===========================
