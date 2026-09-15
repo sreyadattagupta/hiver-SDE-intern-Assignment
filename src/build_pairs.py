@@ -1,5 +1,5 @@
 """
-Step 1 (CLAUDE.md build order): thread reconstruction.
+Step 1 (SPEC.md build order): thread reconstruction.
 
 Reads the raw twcs.csv, filters to Uber_Support, walks the reply chains into
 (customer inbound message -> brand's resolving reply) pairs, and writes:

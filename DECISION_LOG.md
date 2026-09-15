@@ -30,7 +30,7 @@
    reproducibility budget) and no lock-in to one vendor.
 
 8. **`method` field added to classify/draft outputs.** Every result states whether the LLM path
-   or the rule fallback produced it. Per CLAUDE.md, the fallback is reported, never hidden — so
+   or the rule fallback produced it. Per SPEC.md, the fallback is reported, never hidden — so
    a grader can never mistake a rule result for an LLM result.
 
 9. **TF-IDF/LogReg baseline trained on rule weak-labels** (no other labels exist besides the

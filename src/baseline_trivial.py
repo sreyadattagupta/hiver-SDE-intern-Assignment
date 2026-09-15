@@ -1,5 +1,5 @@
 """
-Baseline 1 (CLAUDE.md 5): trivial majority-class classifier.
+Baseline 1 (SPEC.md 5): trivial majority-class classifier.
 
 Predicts the single most common intent in the golden set for every message. This is the
 floor any real classifier must clear — if the LLM/rules can't beat "always guess the most

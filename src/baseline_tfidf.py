@@ -1,5 +1,5 @@
 """
-Baseline 2 (CLAUDE.md 5): TF-IDF + Logistic Regression classifier (no LLM).
+Baseline 2 (SPEC.md 5): TF-IDF + Logistic Regression classifier (no LLM).
 
 This is the "simple but real" ML baseline the LLM classifier must beat. It has no hand
 labels to train on other than the golden set (which is test data), so it trains on WEAK

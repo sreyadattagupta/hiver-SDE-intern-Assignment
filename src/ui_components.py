@@ -1,7 +1,7 @@
 """Shared Streamlit UI helpers + CSS for the customer console and the human-support dashboard.
 
 Kept here so both pages share one visual language and one set of escaping/rendering helpers, and so
-app.py stays a thin viewer (CLAUDE.md 0.1). No agent logic lives here — only presentation.
+app.py stays a thin viewer (SPEC.md 0.1). No agent logic lives here — only presentation.
 """
 from __future__ import annotations
 

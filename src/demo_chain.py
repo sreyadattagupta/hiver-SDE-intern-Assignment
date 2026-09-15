@@ -1,5 +1,5 @@
 """
-Live agent-chain demonstration (CLAUDE.md 0.1 — proves the real pipeline end-to-end).
+Live agent-chain demonstration (SPEC.md 0.1 — proves the real pipeline end-to-end).
 
 Runs one message through all four stages and prints exactly what each stage receives and
 produces, so the hand-off between stages is visible:

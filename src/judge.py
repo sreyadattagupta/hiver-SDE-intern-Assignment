@@ -1,5 +1,5 @@
 """
-LLM-as-judge for reply quality + judge-vs-human agreement (CLAUDE.md 7).
+LLM-as-judge for reply quality + judge-vs-human agreement (SPEC.md 7).
 
 Grades drafted replies on three binary dimensions — grounded, helpful, polite — and measures
 how well the LLM judge agrees with hand ratings (Cohen's kappa + % agreement per dimension).

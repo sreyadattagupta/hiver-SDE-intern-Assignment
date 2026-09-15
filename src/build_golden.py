@@ -1,5 +1,5 @@
 """
-Step 2 (CLAUDE.md build order): golden evaluation set.
+Step 2 (SPEC.md build order): golden evaluation set.
 
 Attaches hand-assigned true_intent labels to the 200 held-out messages sampled in
 data/_golden_sample.csv and writes data/golden_set.csv.

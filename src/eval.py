@@ -1,5 +1,5 @@
 """
-Evaluation harness (CLAUDE.md 7). Runs the golden set through every classifier, computes
+Evaluation harness (SPEC.md 7). Runs the golden set through every classifier, computes
 classification metrics vs both baselines, measures the "please DM us" grounding-gaming rate,
 and audits routing. Writes reports/eval_results.md.
 
@@ -111,7 +111,7 @@ def main() -> None:
     # ---- grounding-gaming: DM-deflection rate ----
     w("## 2. Grounding sanity — 'please DM us' deflection rate\n\n")
     w("Fraction of drafted replies that are just a generic 'send us a DM' with no concrete "
-      "resolution. High = the system games the grounding metric without being helpful (CLAUDE.md 5).\n\n")
+      "resolution. High = the system games the grounding metric without being helpful (SPEC.md 5).\n\n")
     # rules-mode drafts are deterministic (reuse closest historical brand reply) -> reproducible w/o key
     sample = gold.sample(n=min(60, len(gold)), random_state=3)
     dm_hits = 0

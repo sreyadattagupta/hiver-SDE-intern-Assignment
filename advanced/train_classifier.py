@@ -4,7 +4,7 @@ Fine-tune DistilBERT for Uber intent classification (Phase 6 — REAL supervised
 This performs actual supervised fine-tuning of `distilbert-base-uncased` (encoder + a new 7-way
 classification head) on advanced/data/train.csv, then evaluates on the HELD-OUT golden set
 (data/golden_set.csv) and compares macro-F1 to the rule baseline on the SAME golden set — the
-non-negotiable honesty check from CLAUDE.md (weak-labeled training can distill the rules, so the
+non-negotiable honesty check from SPEC.md (weak-labeled training can distill the rules, so the
 only fair verdict is golden-set F1 vs rules).
 
 Outputs:

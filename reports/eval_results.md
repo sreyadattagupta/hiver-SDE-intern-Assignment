@@ -62,7 +62,7 @@ service_complaint      0.714     0.323     0.444        31
 
 ## 2. Grounding sanity — 'please DM us' deflection rate
 
-Fraction of drafted replies that are just a generic 'send us a DM' with no concrete resolution. High = the system games the grounding metric without being helpful (CLAUDE.md 5).
+Fraction of drafted replies that are just a generic 'send us a DM' with no concrete resolution. High = the system games the grounding metric without being helpful (SPEC.md 5).
 
 - Rules-mode drafts (reuse closest historical reply): **32/60 = 53%** are pure DM-deflection.
 - For reference, **61%** of the raw historical brand replies in the grounding corpus are themselves DM-deflections — this is the pattern the retriever inherits.

@@ -106,7 +106,7 @@ stage1 `safety_incident 0.97` → stage4 `HUMAN (safety keyword 'unsafe')`.
 
 ## Bugs deliberately NOT "fixed" (kept as evidence)
 - **`crash` safety-keyword collision** — "app keeps crashing" → false HUMAN escalation. Intentional
-  per CLAUDE.md; unit-tested to ensure it still fires; documented in `failure_analysis.md`.
+  per SPEC.md; unit-tested to ensure it still fires; documented in `failure_analysis.md`.
 
 ## Remaining issues / honest gaps
 - **`general_query` recall 0.34 under the LLM** (over-routes vague follow-ups to service_complaint).

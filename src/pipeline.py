@@ -1,5 +1,5 @@
 """
-The real Uber_Support AI agent. Nothing here is mocked or canned (see CLAUDE.md 0.1).
+The real Uber_Support AI agent. Nothing here is mocked or canned (see SPEC.md 0.1).
 
 Public contracts (stable — eval.py, app.py, routing all depend on these):
 
@@ -372,7 +372,7 @@ _DM_MARKERS = ["dm", "direct message", "send us a", "private message", "shoot us
 
 
 def is_dm_deflection(text: str) -> bool:
-    """True if a reply is just the lazy 'please DM us' template (grounding-gaming check, CLAUDE.md 5)."""
+    """True if a reply is just the lazy 'please DM us' template (grounding-gaming check, SPEC.md 5)."""
     t = text.lower()
     has_dm = any(m in t for m in _DM_MARKERS)
     # short + DM ask + no concrete resolution content
@@ -537,7 +537,7 @@ def draft_reply(message: str, retrieved: list, intent: str = "") -> dict:
 # =========================== ROUTING ===========================
 
 def route_decision(classification: dict, message: str, thread_history: list | None = None) -> dict:
-    """Multi-signal AI-vs-HUMAN routing with a plain-English reason (CLAUDE.md 6).
+    """Multi-signal AI-vs-HUMAN routing with a plain-English reason (SPEC.md 6).
 
     Safety is decided by the CONTEXT-AWARE detect_safety() (LLM verifier or the NLP rule detector),
     not by blind substring matching. This fixes the old 'crash' collision: "the app keeps crashing"
