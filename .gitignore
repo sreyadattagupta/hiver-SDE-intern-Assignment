@@ -18,3 +18,6 @@ advanced/models/
 # runtime artifacts (human-in-the-loop backend)
 data/conversations/
 data/feedback_log.jsonl
+
+# assignment brief (kept local, not published)
+Hiver SDE Intern Assignment.pdf
